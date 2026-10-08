@@ -43,7 +43,13 @@
   const Catalog = {
     /* Hoy: datos locales. Con backend: define endpoints.products y se cargan acá. */
     load() {
-      if (!cfg.endpoints.products) return Promise.resolve();
+      if (!cfg.endpoints.products) {
+        /* DEMO: si se editó el catálogo desde admin.html, se usa esa versión
+           (guardada en este navegador). Con backend esto desaparece. */
+        const saved = storage.get('black_admin_catalog_v1', null);
+        if (saved && Array.isArray(saved.products)) window.BLACK_PRODUCTS = saved.products;
+        return Promise.resolve();
+      }
       return fetch(cfg.endpoints.products)
         .then((r) => { if (!r.ok) throw new Error('catalog'); return r.json(); })
         .then((d) => {
