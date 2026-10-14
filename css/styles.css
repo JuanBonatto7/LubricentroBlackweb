@@ -60,6 +60,8 @@ h2 { margin-bottom: 14px; font-size: clamp(1.7rem, 4.5vw, 2.4rem); font-weight: 
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: calc(var(--header-h) - 3px); }
 .brand { display: inline-flex; align-items: center; }
 .brand-logo { display: block; width: 92px; height: 52px; object-fit: contain; object-position: left center; }
+.brand-text { font: 800 2rem/1 var(--head); letter-spacing: .02em; }
+.footer-brand .brand-text { color: var(--black); }
 .header-actions { display: flex; align-items: center; gap: 4px; }
 .cart-link { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 12px; border-radius: 6px; font-weight: 700; text-decoration: none; }
 .cart-link:hover, .cart-link.is-current { background: var(--bg); }

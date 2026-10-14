@@ -189,5 +189,16 @@
     },
   };
 
+  /* Si falta assets/logo/logo.png, se muestra el nombre en texto en vez de una imagen rota */
+  document.addEventListener('error', (e) => {
+    const t = e.target;
+    if (t && t.classList && t.classList.contains('brand-logo')) {
+      const span = document.createElement('span');
+      span.className = 'brand-text';
+      span.textContent = 'BLACK';
+      t.replaceWith(span);
+    }
+  }, true);
+
   window.BLACK = { cfg, Catalog, Cart, Orders, Payments, ORDER_STATUS, PAYMENT_STATUS, fmt, esc, norm, waLink, storage };
 })();
