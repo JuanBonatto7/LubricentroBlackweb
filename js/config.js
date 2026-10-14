@@ -17,21 +17,26 @@ window.BLACK_CONFIG = {
     ],
   },
 
-  /* MODO DEMO: sin backend los pedidos se guardan solo en el navegador del
-     cliente (localStorage) y BLACK NO los recibe. Poner en false recién
-     cuando `endpoints.orders` apunte a un backend real. */
-  demoMode: true,
+  /* ---------- SUPABASE ----------
+     1) Pegá tu Project URL entre las comillas (Project Settings → API).
+     2) La clave publishable es pública: puede estar en la web.
+     ⚠️ NUNCA pongas acá la clave "secret" ni la "service_role". */
+  supabase: {
+    url: 'PEGAR_URL_AQUI',   // ej: 'https://abcdefghijk.supabase.co'
+    anonKey: 'sb_publishable_qLZInxBm9sIcmRJmphOG_g_eBoPajqy',
+  },
 
-  /* URLs del backend (vacías = se usan los datos locales de js/products-data.js).
-     Ver docs/PREPARACION-BACKEND.md para el contrato de cada endpoint. */
+  /* Se desactiva solo cuando Supabase está bien configurado (ver js/store.js).
+     Mientras la URL no esté puesta, la web sigue funcionando en modo demo. */
+  demoMode: false,
+
+  /* Ya no se usan con Supabase; quedan por si más adelante hay otro backend. */
   endpoints: {
-    products: '',           // GET  → { categories: [...], products: [...] }
-    orders: '',             // POST → crea el pedido y devuelve { number, status, ... }
+    products: '',
+    orders: '',
     paymentPreference: '',  // POST → { orderNumber } → { checkoutUrl } (Mercado Pago)
   },
 
-  /* Pagos: 'none' hoy. Cambiar a 'mercadopago' cuando exista el backend que
-     crea la preferencia de pago (no se puede hacer solo desde el navegador). */
   payments: { provider: 'none' },
 
   delivery: [

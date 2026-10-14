@@ -17,21 +17,21 @@
 </head>
 <body data-page="admin" class="admin">
 
-  <!-- Ingreso (demostración: acepta cualquier clave) -->
+  <!-- Ingreso (Supabase Auth) -->
   <section class="adm-login" id="login" hidden>
     <form class="adm-login-card" id="login-form">
       <img class="brand-logo" src="assets/logo/logo.png" alt="BLACK Lubricentro" width="112" height="60">
       <h1>Administración</h1>
       <div class="field">
-        <label for="adm-user">Usuario</label>
-        <input id="adm-user" type="text" autocomplete="username" value="admin">
+        <label for="adm-user">Email</label>
+        <input id="adm-user" type="email" autocomplete="username" required>
       </div>
       <div class="field">
         <label for="adm-pass">Contraseña</label>
         <input id="adm-pass" type="password" autocomplete="current-password">
       </div>
+      <p class="form-error" id="login-error" role="alert"></p>
       <button class="btn btn-red btn-lg btn-block" type="submit">Ingresar</button>
-      <p class="fine">Demostración: ingresá con cualquier contraseña. En la versión real este acceso estará protegido.</p>
     </form>
   </section>
 
@@ -72,10 +72,6 @@
         <div id="order-list"></div>
       </section>
 
-      <p class="adm-foot">
-        <button class="link-btn" type="button" id="reset-demo">Restablecer datos de ejemplo</button>
-        · Demostración: los cambios se guardan solo en este navegador.
-      </p>
     </main>
   </div>
 
