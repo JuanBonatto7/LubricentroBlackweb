@@ -22,7 +22,7 @@ window.BLACK_CONFIG = {
      2) La clave publishable es pública: puede estar en la web.
      ⚠️ NUNCA pongas acá la clave "secret" ni la "service_role". */
   supabase: {
-    url: 'PEGAR_URL_AQUI',   // ej: 'https://abcdefghijk.supabase.co'
+    url: 'https://kwuvkcsfkegsssdoqzua.supabase.co',
     anonKey: 'sb_publishable_qLZInxBm9sIcmRJmphOG_g_eBoPajqy',
   },
 
