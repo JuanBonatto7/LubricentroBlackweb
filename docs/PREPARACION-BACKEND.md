@@ -1,34 +1,8 @@
-# BLACK – backend Supabase + Netlify
-
-La integración actual usa Netlify Functions y Supabase PostgreSQL. El sitio no incorpora pagos online.
-
-## Puesta en marcha
-
-1. Crear un proyecto en Supabase.
-2. Ejecutar `supabase/schema.sql` desde SQL Editor.
-3. Ejecutar `supabase/seed.sql` para cargar categorías y productos demo.
-4. Crear una cuenta en Supabase Auth > Users.
-5. Reemplazar el UUID y email de `supabase/admin-user.sql` y ejecutarlo.
-6. Configurar en Netlify: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y opcionalmente `ALLOWED_ORIGIN`.
-7. En local usar `.env` basado en `.env.example` y ejecutar `npx netlify dev`.
-
-La service role key nunca se carga en HTML ni JavaScript público. El navegador recibe solo el catálogo activo, crea pedidos mediante una RPC y usa un JWT de Supabase únicamente para operaciones administrativas.
-
-## Endpoints
-
-| Ruta | Método | Acceso | Función |
-|---|---|---|---|
-| `/api/products` | GET | Público | Productos activos y categorías |
-| `/api/orders` | POST | Público validado | Crea pedido, recalcula total y descuenta stock |
-| `/api/admin/auth` | POST | Público controlado | Login de Supabase Auth + comprobación de `admin_users` |
-| `/api/admin/products` | GET/POST/PATCH/DELETE | Admin JWT | CRUD de productos; DELETE desactiva |
-| `/api/admin/orders` | GET/PATCH | Admin JWT | Lista pedidos y actualiza estado/pago |
-
-La creación de pedidos usa `Idempotency-Key` y la función PostgreSQL `create_order`. Los precios se leen desde `products`, el stock se bloquea con `FOR UPDATE` y el total se recalcula en servidor. `update_order_status` devuelve el stock una sola vez al cancelar y no permite reabrir pedidos cancelados.
+# BLACK – de demo a tienda real
 
 ## Dónde estamos hoy
 
-La versión inicial era 100 % estática (HTML, CSS, JS). Esa tabla explica qué se reemplazó con la integración actual:
+La web es 100 % estática (HTML, CSS, JS). Funciona sin servidor, pero por eso:
 
 | Qué | Hoy | Consecuencia |
 |---|---|---|
@@ -40,7 +14,7 @@ La versión inicial era 100 % estática (HTML, CSS, JS). Esa tabla explica qué 
 `js/config.js` concentra los interruptores: `demoMode`, `endpoints.*` y `payments.provider`.
 La interfaz (`js/script.js`) no cambia al pasar a producción: solo se reemplaza lo que hay detrás de `Catalog.load()`, `Orders.submit()` y `Payments.begin()` en `js/store.js`.
 
-## Contratos de referencia de la demo
+## Qué hace falta: un backend
 
 Cualquier backend que exponga estos endpoints sirve (Spring Boot + MySQL, Node, o un servicio como Supabase/Firebase).
 
@@ -54,7 +28,7 @@ Cualquier backend que exponga estos endpoints sirve (Spring Boot + MySQL, Node, 
 
 **Regla de seguridad:** el navegador nunca es fuente de verdad. El precio y el total que viajan en el pedido son solo informativos; el servidor los vuelve a calcular.
 
-La configuración actual ya usa `demoMode: false` y `endpoints.products/orders` apuntan a `/api/products` y `/api/orders`. El endpoint de pagos queda vacío porque no se implementó una pasarela.
+Al tener backend: completar las tres URLs de `endpoints` en `config.js`, poner `demoMode: false` y `payments.provider: 'mercadopago'`.
 
 ## Modelo de datos sugerido (MySQL)
 
@@ -95,16 +69,16 @@ Los pedidos guardan nombre y precio del producto en el momento de la compra (`or
 
 Esto no está probado: depende de tener cuenta de Mercado Pago, credenciales y el backend.
 
-## Administración histórica
+## Administración
 
-- `js/products-data.js` conserva la semilla local de la demo.
-- El panel actual usa Supabase Auth y `/api/admin/*`; eliminar desactiva productos para conservar el historial.
+- **Hoy:** editar `js/products-data.js` y volver a publicar (precio, stock, imagen, categoría, destacado, agotado, ocultar con `active: false`).
+- **Producción:** un panel de administración protegido con login sobre `/api/admin/*`, con las acciones de la lista de requisitos (crear, editar, eliminar, precio, stock, imagen, categoría, destacado, agotado) y una vista de pedidos con cambio de estado.
 
 ## Checklist para publicar
 
-- [x] Backend con productos, pedidos y panel de administración
-- [x] `demoMode: false` y endpoints configurados
-- [ ] Mercado Pago (no implementado por decisión del proyecto)
+- [ ] Backend con productos, pedidos y panel de administración
+- [ ] `demoMode: false` y endpoints configurados
+- [ ] Mercado Pago (cuenta, credenciales, webhook)
 - [ ] Email de confirmación al cliente y aviso de pedido nuevo al local (lo envía el backend)
 - [ ] Datos reales en `config.js`: teléfono, WhatsApp, dirección, Instagram, horarios
 - [ ] Fotos reales en `assets/products/` y catálogo real

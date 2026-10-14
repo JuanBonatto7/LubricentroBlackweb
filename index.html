@@ -3,364 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="BLACK Lubricentro y Cosmética Vehicular en Río Cuarto: lubricación, service, mecánica ligera y detailing. Solicitá tu turno online.">
-  <title>BLACK Lubricentro | Cuidado vehicular en Río Cuarto</title>
+  <title>BLACK Lubricentro | Productos para autos y detailing en Río Cuarto</title>
+  <meta name="description" content="Tienda online de BLACK en Río Cuarto, Córdoba: detailing, limpieza, lubricantes, filtros y accesorios para tu vehículo. Pedí online y retirá en el local.">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0b0b0c">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:title" content="BLACK Lubricentro | Productos para autos y detailing en Río Cuarto">
+  <meta property="og:description" content="Tienda online de BLACK en Río Cuarto, Córdoba: detailing, limpieza, lubricantes, filtros y accesorios para tu vehículo. Pedí online y retirá en el local.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Yellowtail&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "AutoPartsStore", "name": "BLACK Lubricentro y Cosmética Vehicular", "description": "Tienda de productos de detailing, limpieza, lubricantes, filtros y accesorios para vehículos, con servicio de lubricentro, en Río Cuarto, Córdoba.", "telephone": "+54 9 358 123 4567", "address": {"@type": "PostalAddress", "streetAddress": "Av. San Martín 1234", "addressLocality": "Río Cuarto", "addressRegion": "Córdoba", "addressCountry": "AR"}, "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "08:00", "closes": "20:00"}, {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "14:00"}], "areaServed": "Río Cuarto, Córdoba"}</script>
   <script src="js/config.js" defer></script>
   <script src="js/products-data.js" defer></script>
   <script src="js/store.js" defer></script>
+  <script src="js/layout.js" defer></script>
   <script src="js/script.js" defer></script>
-  <script src="js/home-products.js" defer></script>
 </head>
-<body>
-
-  <!-- Íconos y dibujos reutilizables -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-    <defs>
-      <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3c3.5 4.5 6 7.6 6 10.5a6 6 0 0 1-12 0C6 10.6 8.5 7.5 12 3z" fill="currentColor" stroke="none"/></symbol>
-      <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.1l-5.8 5.8a1.8 1.8 0 0 0 2.6 2.6l5.8-5.8a4 4 0 0 0 5.1-5.4l-2.6 2.6-2.4-.6-.6-2.4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
-      <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16v2.5M19 16v2.5M3 13l2-5.5A2 2 0 0 1 6.9 6h10.2A2 2 0 0 1 19 7.5L21 13v3H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M7 13h.01M17 13h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
-      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M10 3l1.9 5.1L17 10l-5.1 1.9L10 17l-1.9-5.1L3 10l5.1-1.9z" fill="currentColor" stroke="none"/><path d="M18.5 14l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z" fill="currentColor" stroke="none"/></symbol>
-      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
-      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-      <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 20l1.4-4.1A8 8 0 1 1 8.2 18.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.2 8.8c.4 2.1 2.6 4.3 5 5l1.4-1.3-2-1.3-1 .8c-.8-.4-1.5-1.1-1.9-1.9l.8-1-1.3-2z" fill="currentColor" stroke="none"/></symbol>
-      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></symbol>
-      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
-      <symbol id="i-insta" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="7" r="1.2" fill="currentColor"/></symbol>
-
-      <!-- Envases de producto (el color de la etiqueta se define con --c) -->
-      <symbol id="p-bottle" viewBox="0 0 80 140">
-        <rect x="31" y="6" width="18" height="14" rx="3" style="fill:var(--c)"/>
-        <rect x="33" y="20" width="14" height="14" fill="#2a323a"/>
-        <rect x="14" y="32" width="52" height="102" rx="12" fill="#161c22" stroke="#34404a" stroke-width="1.5"/>
-        <rect x="14" y="62" width="52" height="44" style="fill:var(--c)"/>
-        <rect x="22" y="40" width="5" height="88" rx="2.5" fill="#fff" opacity=".1"/>
-        <rect x="30" y="76" width="22" height="3" rx="1.5" fill="#fff" opacity=".85"/>
-        <rect x="30" y="84" width="16" height="3" rx="1.5" fill="#fff" opacity=".55"/>
-      </symbol>
-      <symbol id="p-spray" viewBox="0 0 80 140">
-        <path d="M34 8h26l6 7v6H40l-6-5z" fill="#2a323a"/>
-        <rect x="34" y="8" width="10" height="26" rx="2" style="fill:var(--c)"/>
-        <rect x="36" y="32" width="8" height="12" fill="#2a323a"/>
-        <rect x="18" y="42" width="44" height="92" rx="10" fill="#161c22" stroke="#34404a" stroke-width="1.5"/>
-        <rect x="18" y="68" width="44" height="40" style="fill:var(--c)"/>
-        <rect x="25" y="49" width="4" height="78" rx="2" fill="#fff" opacity=".1"/>
-        <rect x="32" y="80" width="20" height="3" rx="1.5" fill="#fff" opacity=".85"/>
-        <rect x="32" y="88" width="14" height="3" rx="1.5" fill="#fff" opacity=".55"/>
-      </symbol>
-      <symbol id="p-cloth" viewBox="0 0 80 140">
-        <rect x="12" y="46" width="56" height="40" rx="4" fill="#e11d2e" transform="rotate(-6 40 66)"/>
-        <rect x="12" y="58" width="56" height="40" rx="4" fill="#f4f6f8" transform="rotate(3 40 78)"/>
-        <rect x="12" y="70" width="56" height="40" rx="4" fill="#2a323a" transform="rotate(-2 40 90)"/>
-        <rect x="24" y="86" width="32" height="3" rx="1.5" fill="#e11d2e" transform="rotate(-2 40 90)"/>
-      </symbol>
-    </defs>
-  </svg>
-
-  <a class="skip-link" href="#turnos">Ir a solicitar turno</a>
-
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="#inicio" aria-label="BLACK Lubricentro, inicio">
-        <img class="brand-logo" src="assets/logo/logo.png" alt="BLACK Lubricentro">
-      </a>
-
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
-        <span class="sr-only">Abrir menú</span>
-        <span></span><span></span><span></span>
-      </button>
-
-      <nav class="site-nav" id="site-nav" aria-label="Navegación principal">
-        <a href="#inicio" class="is-current">Inicio</a>
-        <a href="#turnos">Turnos</a>
-        <a href="#servicios">Servicios</a>
-        <a href="#productos">Productos</a>
-        <a href="#nosotros">Nosotros</a>
-        <a href="#contacto">Contacto</a>
-        <a class="btn btn-red nav-whatsapp" data-wa="" href="#" target="_blank" rel="noopener">
-          <svg class="ico"><use href="#i-chat"/></svg> WhatsApp
-        </a>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <!-- HERO -->
-    <section class="hero" id="inicio">
+<body data-page="home">
+  <a class="skip-link" href="#contenido">Ir al contenido</a>
+  <header class="site-header" id="site-header"></header>
+  <main id="contenido">
+    <section class="hero" aria-labelledby="hero-title">
       <div class="hero-slash" aria-hidden="true"></div>
       <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="hero-kicker">Lubricentro · Mecánica · Detailing</p>
-          <h1>Tu vehículo<br><span>en buenas manos</span></h1>
-          <p class="hero-text">Servicios de lubricentro, mecánica ligera y cuidado vehicular. Calidad, confianza y atención personalizada.</p>
-          <div class="hero-actions">
-            <a class="btn btn-red btn-lg" href="#turnos"><svg class="ico"><use href="#i-calendar"/></svg> Solicitar turno</a>
-            <a class="btn btn-ghost btn-lg" data-wa="" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a>
-          </div>
+          <h1 id="hero-title">Todo para el cuidado y mantenimiento de tu vehículo</h1>
+          <p>Detailing, lubricantes, filtros y accesorios. Pedí online y retirá en nuestro local de Río Cuarto.</p>
+          <a class="btn btn-red btn-lg" href="productos.html">Ver productos</a>
         </div>
-
         <div class="hero-art" aria-hidden="true">
-          <svg viewBox="0 0 520 430" role="img" focusable="false">
-            <defs>
-              <linearGradient id="oil" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#f6b73c"/>
-                <stop offset="1" stop-color="#b9610f"/>
-              </linearGradient>
-              <radialGradient id="glow" cx=".5" cy=".5" r=".5">
-                <stop offset="0" stop-color="#f6b73c" stop-opacity=".55"/>
-                <stop offset="1" stop-color="#f6b73c" stop-opacity="0"/>
-              </radialGradient>
-            </defs>
-            <circle cx="360" cy="250" r="170" fill="none" stroke="#17293a" stroke-width="2"/>
-            <circle cx="360" cy="250" r="120" fill="none" stroke="#17293a" stroke-width="2" stroke-dasharray="6 10"/>
-            <ellipse cx="262" cy="372" rx="120" ry="40" fill="url(#glow)"/>
-            <path d="M196 352h132l-14 40h-104z" fill="#0f1c29" stroke="#2a3d50" stroke-width="2"/>
-            <ellipse cx="262" cy="352" rx="66" ry="14" fill="#07131f" stroke="#2a3d50" stroke-width="2"/>
-            <path d="M302 150C294 205 272 262 262 350" stroke="url(#oil)" stroke-width="11" stroke-linecap="round" fill="none"/>
-            <path d="M298 160C291 210 273 262 265 346" stroke="#ffe3a0" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".7"/>
-            <ellipse cx="262" cy="352" rx="30" ry="7" fill="url(#oil)"/>
-            <g transform="translate(335 112) rotate(-135)">
-              <rect x="-16" y="-48" width="32" height="14" rx="3" fill="#e11d2e"/>
-              <rect x="-13" y="-36" width="26" height="14" fill="#2a3d50"/>
-              <rect x="-58" y="-24" width="116" height="170" rx="18" fill="#101b27" stroke="#33485c" stroke-width="2"/>
-              <rect x="-58" y="30" width="116" height="62" fill="#e11d2e"/>
-              <rect x="-46" y="-12" width="8" height="150" rx="4" fill="#fff" opacity=".08"/>
-              <rect x="-26" y="46" width="52" height="6" rx="3" fill="#fff"/>
-              <rect x="-26" y="60" width="36" height="5" rx="2.5" fill="#fff" opacity=".6"/>
-              <path d="M40 -12v118" stroke="#33485c" stroke-width="2" opacity=".7"/>
-            </g>
-            <circle cx="222" cy="372" r="3.5" fill="#f6b73c"/>
-            <circle cx="308" cy="368" r="2.5" fill="#f6b73c"/>
-          </svg>
+          <svg style="--c:#e11d2e" focusable="false"><use href="#p-bottle"/></svg>
+          <svg style="--c:#e11d2e" focusable="false"><use href="#p-jug"/></svg>
+          <svg style="--c:#cfd6dc" focusable="false"><use href="#p-spray"/></svg>
         </div>
       </div>
     </section>
 
-    <!-- SOLICITAR TURNO (prioridad del sitio) -->
-    <section class="booking" id="turnos" aria-labelledby="turnos-title">
+    <section class="section section-white" aria-labelledby="cat-title">
       <div class="container">
-        <div class="booking-head">
-          <p class="eyebrow">Solicitá tu turno</p>
-          <h2 id="turnos-title">Reservá tu turno en pocos pasos</h2>
-          <p>Elegí el servicio, la fecha y el horario que preferís. Nos comunicaremos para confirmar.</p>
-        </div>
-
-        <div class="booking-card">
-          <div class="booking-main">
-            <ol class="stepper" id="stepper" aria-label="Pasos para solicitar turno">
-              <li class="is-active" data-step="1"><button type="button" class="step-btn" disabled><b>1</b><span>Servicio</span></button></li>
-              <li data-step="2"><button type="button" class="step-btn" disabled><b>2</b><span>Fecha y hora</span></button></li>
-              <li data-step="3"><button type="button" class="step-btn" disabled><b>3</b><span>Tus datos</span></button></li>
-              <li data-step="4"><button type="button" class="step-btn" disabled><b>4</b><span>Confirmación</span></button></li>
-            </ol>
-
-            <form id="booking-form" novalidate>
-              <!-- Paso 1 -->
-              <fieldset class="panel" data-panel="1">
-                <legend tabindex="-1">1. Seleccioná un servicio</legend>
-                <div class="service-options">
-                  <label><input type="radio" name="service" value="Lubricentro"><span class="opt"><svg class="ico"><use href="#i-drop"/></svg>Lubricentro<small>Cambio de aceite y filtros</small></span></label>
-                  <label><input type="radio" name="service" value="Mecánica ligera"><span class="opt"><svg class="ico"><use href="#i-wrench"/></svg>Mecánica ligera<small>Diagnóstico y reparación</small></span></label>
-                  <label><input type="radio" name="service" value="Service"><span class="opt"><svg class="ico"><use href="#i-car"/></svg>Service<small>Preventivo y correctivo</small></span></label>
-                  <label><input type="radio" name="service" value="Detailing"><span class="opt"><svg class="ico"><use href="#i-spark"/></svg>Detailing<small>Limpieza y estética</small></span></label>
-                  <label><input type="radio" name="service" value="Revisión del vehículo"><span class="opt"><svg class="ico"><use href="#i-search"/></svg>Revisión del vehículo<small>Chequeo general</small></span></label>
-                  <label><input type="radio" name="service" value="Otros servicios"><span class="opt"><svg class="ico"><use href="#i-gear"/></svg>Otros servicios<small>Consultanos tu caso</small></span></label>
-                </div>
-                <p class="form-error" role="alert"></p>
-                <div class="actions"><button type="button" class="btn btn-red" data-next>Continuar <svg class="ico"><use href="#i-arrow"/></svg></button></div>
-              </fieldset>
-
-              <!-- Paso 2 -->
-              <fieldset class="panel" data-panel="2" hidden>
-                <legend tabindex="-1">2. Elegí fecha y horario</legend>
-                <div class="field">
-                  <label for="date">Fecha preferida</label>
-                  <input type="date" id="date" name="date">
-                  <p class="hint" id="date-hint">Atendemos de lunes a viernes de 8:00 a 20:00 y sábados de 8:00 a 14:00.</p>
-                </div>
-                <div class="field">
-                  <span class="label" id="time-label">Horario preferido</span>
-                  <div class="slots" id="slots" role="radiogroup" aria-labelledby="time-label">
-                    <p class="slots-empty">Primero elegí una fecha para ver los horarios.</p>
-                  </div>
-                </div>
-                <p class="form-error" role="alert"></p>
-                <div class="actions">
-                  <button type="button" class="btn btn-line" data-prev>Volver</button>
-                  <button type="button" class="btn btn-red" data-next>Continuar <svg class="ico"><use href="#i-arrow"/></svg></button>
-                </div>
-              </fieldset>
-
-              <!-- Paso 3 -->
-              <fieldset class="panel" data-panel="3" hidden>
-                <legend tabindex="-1">3. Dejanos tus datos</legend>
-                <div class="field-row">
-                  <div class="field"><label for="name">Nombre y apellido</label><input type="text" id="name" name="name" autocomplete="name" placeholder="Ej: Juan Pérez"></div>
-                  <div class="field"><label for="phone">WhatsApp</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="Ej: 358 123 4567"></div>
-                </div>
-                <div class="field"><label for="vehicle">Vehículo <span class="opt-tag">(opcional)</span></label><input type="text" id="vehicle" name="vehicle" placeholder="Marca, modelo y año"></div>
-                <div class="field"><label for="notes">Comentarios <span class="opt-tag">(opcional)</span></label><textarea id="notes" name="notes" rows="2" placeholder="Contanos qué necesita tu vehículo"></textarea></div>
-                <p class="form-error" role="alert"></p>
-                <div class="actions">
-                  <button type="button" class="btn btn-line" data-prev>Volver</button>
-                  <button type="button" class="btn btn-red" data-next>Revisar solicitud <svg class="ico"><use href="#i-arrow"/></svg></button>
-                </div>
-              </fieldset>
-
-              <!-- Paso 4 -->
-              <fieldset class="panel" data-panel="4" hidden>
-                <legend tabindex="-1">4. Revisá y confirmá</legend>
-                <dl class="summary" id="summary"></dl>
-                <p class="note">Al enviar se abre WhatsApp con tu solicitud lista. BLACK te responde para confirmar el turno.</p>
-                <div class="sent" id="sent" hidden>
-                  <svg class="ico"><use href="#i-check"/></svg>
-                  <p><strong>¡Listo!</strong> Se abrió WhatsApp con tu solicitud. Enviá el mensaje y te confirmamos el turno a la brevedad.</p>
-                </div>
-                <div class="actions">
-                  <button type="button" class="btn btn-line" data-prev id="btn-edit">Editar</button>
-                  <a class="btn btn-red" id="send-wa" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Enviar por WhatsApp</a>
-                  <button type="button" class="btn btn-line" id="btn-reset" hidden>Pedir otro turno</button>
-                </div>
-              </fieldset>
-            </form>
-          </div>
-
-          <aside class="booking-aside">
-            <svg class="ico ico-xl"><use href="#i-calendar"/></svg>
-            <h3>¿Preferís hablar con nosotros?</h3>
-            <p>Podés reservar tu turno directamente por WhatsApp.</p>
-            <a class="btn btn-ghost" data-wa="Hola BLACK, quiero reservar un turno." href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Contactar por WhatsApp</a>
-          </aside>
-        </div>
+        <div class="section-head"><h2 id="cat-title">Categorías</h2></div>
+        <div class="cat-grid" id="home-categories"></div>
       </div>
     </section>
 
-    <!-- SERVICIOS -->
-    <section class="section" id="servicios" aria-labelledby="servicios-title">
+    <section class="section" aria-labelledby="feat-title">
       <div class="container">
-        <p class="eyebrow">Nuestros servicios</p>
-        <h2 id="servicios-title">Todo lo que tu vehículo necesita</h2>
-        <div class="service-grid">
-          <a class="service-card" href="#turnos" data-service="Lubricentro"><svg class="ico ico-lg"><use href="#i-drop"/></svg><h3>Lubricentro</h3><p>Cambio de aceite y filtros y más.</p></a>
-          <a class="service-card" href="#turnos" data-service="Mecánica ligera"><svg class="ico ico-lg"><use href="#i-wrench"/></svg><h3>Mecánica ligera</h3><p>Diagnóstico y reparación.</p></a>
-          <a class="service-card" href="#turnos" data-service="Service"><svg class="ico ico-lg"><use href="#i-car"/></svg><h3>Service</h3><p>Mantenimiento preventivo y correctivo.</p></a>
-          <a class="service-card" href="#turnos" data-service="Detailing"><svg class="ico ico-lg"><use href="#i-spark"/></svg><h3>Detailing</h3><p>Limpieza y estética vehicular.</p></a>
-          <a class="service-card" href="#turnos" data-service="Revisión del vehículo"><svg class="ico ico-lg"><use href="#i-search"/></svg><h3>Revisión del vehículo</h3><p>Chequeo general y control.</p></a>
-          <a class="service-card" href="#turnos" data-service="Otros servicios"><svg class="ico ico-lg"><use href="#i-gear"/></svg><h3>Otros servicios</h3><p>Consultá por más opciones.</p></a>
+        <div class="section-head">
+          <h2 id="feat-title">Productos destacados</h2>
+          <a class="text-link" href="productos.html">Ver todo el catálogo <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
         </div>
+        <div class="product-grid" id="home-featured"></div>
       </div>
     </section>
 
-    <!-- PRODUCTOS -->
-    <section class="section section-tint" id="productos" aria-labelledby="productos-title">
+    <section class="service-band" aria-label="Servicios de lubricentro">
       <div class="container">
-        <div class="products-head">
-          <div>
-            <p class="eyebrow">Catálogo</p>
-            <h2 id="productos-title">Nuestros productos</h2>
-            <p class="lead">Encontrá los mejores productos de limpieza, detailing y cuidado del vehículo.</p>
-          </div>
-        </div>
-
-        <div class="filters" role="group" aria-label="Filtrar productos por categoría">
-          <button type="button" class="filter is-active" data-filter="all" aria-pressed="true">Todos</button>
-          <button type="button" class="filter" data-filter="Limpieza" aria-pressed="false">Limpieza</button>
-          <button type="button" class="filter" data-filter="Detailing" aria-pressed="false">Detailing</button>
-          <button type="button" class="filter" data-filter="Lubricantes" aria-pressed="false">Lubricantes</button>
-          <button type="button" class="filter" data-filter="Accesorios" aria-pressed="false">Accesorios</button>
-        </div>
-
-        <!-- Productos de demostración: reemplazar nombres, precios y fotos por el catálogo real. -->
-        <div class="product-grid" id="product-grid">
-          <article class="product-card" data-category="Limpieza">
-            <div class="product-art"><svg style="--c:#2f9e5b"><use href="#p-bottle"/></svg></div>
-            <div class="product-body"><h3>Shampoo Neutro</h3><p>Limpieza profunda y segura para la pintura.</p><strong class="price">$ 5.800</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Shampoo Neutro" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-          <article class="product-card" data-category="Detailing">
-            <div class="product-art"><svg style="--c:#e11d2e"><use href="#p-bottle"/></svg></div>
-            <div class="product-body"><h3>Cera Líquida</h3><p>Brillo y protección por más tiempo.</p><strong class="price">$ 8.900</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Cera Líquida" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-          <article class="product-card" data-category="Limpieza">
-            <div class="product-art"><svg style="--c:#6fbf2a"><use href="#p-bottle"/></svg></div>
-            <div class="product-body"><h3>Limpiador de Interiores</h3><p>Renueva y protege el interior de tu vehículo.</p><strong class="price">$ 7.200</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Limpiador de Interiores" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-          <article class="product-card" data-category="Limpieza">
-            <div class="product-art"><svg style="--c:#cfd6dc"><use href="#p-spray"/></svg></div>
-            <div class="product-body"><h3>Limpia Llantas</h3><p>Elimina la suciedad y realza el brillo.</p><strong class="price">$ 6.500</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Limpia Llantas" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-          <article class="product-card" data-category="Accesorios">
-            <div class="product-art"><svg style="--c:#1fa6b8"><use href="#p-spray"/></svg></div>
-            <div class="product-body"><h3>Aromatizante</h3><p>Fragancia duradera para tu auto.</p><strong class="price">$ 3.900</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Aromatizante" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-          <article class="product-card" data-category="Detailing">
-            <div class="product-art"><svg style="--c:#e8a317"><use href="#p-bottle"/></svg></div>
-            <div class="product-body"><h3>Abrillantador de Neumáticos</h3><p>Acabado profundo y protección.</p><strong class="price">$ 6.800</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Abrillantador de Neumáticos" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-          <article class="product-card" data-category="Lubricantes">
-            <div class="product-art"><svg style="--c:#e11d2e"><use href="#p-bottle"/></svg></div>
-            <div class="product-body"><h3>Aceite 5W-30 Sintético</h3><p>Protección y rendimiento del motor. Envase de 4 L.</p><strong class="price">$ 38.500</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Aceite 5W-30 Sintético" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-          <article class="product-card" data-category="Accesorios">
-            <div class="product-art"><svg style="--c:#e11d2e"><use href="#p-cloth"/></svg></div>
-            <div class="product-body"><h3>Paños de Microfibra</h3><p>Suaves, absorbentes y sin pelusa. Pack x3.</p><strong class="price">$ 4.200</strong>
-            <a class="btn btn-wa" data-wa="Hola BLACK, quiero consultar por: Paños de Microfibra" href="#" target="_blank" rel="noopener"><svg class="ico"><use href="#i-chat"/></svg> Consultar por WhatsApp</a></div>
-          </article>
-        </div>
-        <p class="demo-note">Productos y precios de demostración.</p>
-      </div>
-    </section>
-
-    <!-- NOSOTROS -->
-    <section class="about" id="nosotros" aria-labelledby="nosotros-title">
-      <div class="about-slash" aria-hidden="true"></div>
-      <div class="container about-grid">
-        <div class="about-copy">
-          <h2 id="nosotros-title">Sobre BLACK</h2>
-          <p>Somos un lubricentro y centro de cuidado vehicular, donde combinamos experiencia, productos de calidad y un servicio personalizado para que tu auto siempre rinda al máximo.</p>
-          <a class="btn btn-ghost" href="#contacto">Conocé más</a>
-        </div>
-        <p class="about-script" aria-hidden="true">Cuidamos<br>tu vehículo</p>
+        <div><strong>¿Necesitás service o cambio de aceite?</strong><p>También lo hacemos en el local.</p></div>
+        <a class="text-link" href="lubricentro.html">Ver servicios <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>
       </div>
     </section>
   </main>
-
-  <footer class="site-footer" id="contacto">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <a class="brand" href="#inicio" aria-label="BLACK Lubricentro, inicio"><img class="brand-logo" src="assets/logo/logo.png" alt="BLACK Lubricentro"></a>
-        <p>Lubricentro y cosmética vehicular</p>
-      </div>
-      <div>
-        <h3>Contacto</h3>
-        <ul>
-          <li><svg class="ico"><use href="#i-chat"/></svg><a data-wa="" href="#" target="_blank" rel="noopener">+54 9 358 123 4567</a></li>
-          <li><svg class="ico"><use href="#i-insta"/></svg><a href="https://instagram.com/black.lubricentro" target="_blank" rel="noopener">@black.lubricentro</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3>Dirección y horarios</h3>
-        <ul>
-          <li><svg class="ico"><use href="#i-pin"/></svg><span>Av. San Martín 1234, Río Cuarto, Córdoba</span></li>
-          <li><svg class="ico"><use href="#i-clock"/></svg><span>Lun a Vie: 8:00 – 20:00<br>Sáb: 8:00 – 14:00</span></li>
-        </ul>
-      </div>
-    </div>
-    <div class="container footer-bottom">© 2026 BLACK Lubricentro. Todos los derechos reservados.</div>
-  </footer>
-
-  <a class="wa-float" data-wa="" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><svg class="ico"><use href="#i-chat"/></svg></a>
+  <footer class="site-footer" id="site-footer"></footer>
 </body>
 </html>

@@ -20,14 +20,14 @@ window.BLACK_CONFIG = {
   /* MODO DEMO: sin backend los pedidos se guardan solo en el navegador del
      cliente (localStorage) y BLACK NO los recibe. Poner en false recién
      cuando `endpoints.orders` apunte a un backend real. */
-  demoMode: false,
+  demoMode: true,
 
   /* URLs del backend (vacías = se usan los datos locales de js/products-data.js).
      Ver docs/PREPARACION-BACKEND.md para el contrato de cada endpoint. */
   endpoints: {
-    products: '/api/products',
-    orders: '/api/orders',
-    paymentPreference: '',
+    products: '',           // GET  → { categories: [...], products: [...] }
+    orders: '',             // POST → crea el pedido y devuelve { number, status, ... }
+    paymentPreference: '',  // POST → { orderNumber } → { checkoutUrl } (Mercado Pago)
   },
 
   /* Pagos: 'none' hoy. Cambiar a 'mercadopago' cuando exista el backend que

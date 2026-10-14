@@ -56,7 +56,7 @@
           window.BLACK_PRODUCTS = d.products || d;
           if (d.categories) window.BLACK_CATEGORIES = d.categories;
         })
-        .catch(() => { throw new Error('No pudimos cargar el catálogo. Revisá la conexión e intentá nuevamente.'); });
+        .catch(() => { /* si falla, queda el catálogo local */ });
     },
     categories() { return window.BLACK_CATEGORIES || []; },
     products() { return (window.BLACK_PRODUCTS || []).filter((p) => p.active !== false); },
@@ -152,9 +152,7 @@
     async submit(payload) {
       let order;
       if (cfg.endpoints.orders) {
-        const clientRequestId = payload.clientRequestId || (crypto.randomUUID ? crypto.randomUUID() : `black-${Date.now()}-${Math.random().toString(16).slice(2)}`);
-        const requestPayload = Object.assign({}, payload, { clientRequestId });
-        const res = await fetch(cfg.endpoints.orders, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': clientRequestId }, body: JSON.stringify(requestPayload) });
+        const res = await fetch(cfg.endpoints.orders, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok) throw new Error('orders');
         order = await res.json();
       } else {

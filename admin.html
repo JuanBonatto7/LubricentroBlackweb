@@ -13,7 +13,7 @@
   <script src="js/config.js" defer></script>
   <script src="js/products-data.js" defer></script>
   <script src="js/store.js" defer></script>
-  <script src="js/admin-api.js" defer></script>
+  <script src="js/admin.js" defer></script>
 </head>
 <body data-page="admin" class="admin">
 
@@ -30,9 +30,8 @@
         <label for="adm-pass">Contraseña</label>
         <input id="adm-pass" type="password" autocomplete="current-password">
       </div>
-      <p class="form-error" id="admin-error" role="alert"></p>
       <button class="btn btn-red btn-lg btn-block" type="submit">Ingresar</button>
-      <p class="fine">Ingresá con una cuenta autorizada en Supabase Auth.</p>
+      <p class="fine">Demostración: ingresá con cualquier contraseña. En la versión real este acceso estará protegido.</p>
     </form>
   </section>
 
@@ -75,7 +74,7 @@
 
       <p class="adm-foot">
         <button class="link-btn" type="button" id="reset-demo">Restablecer datos de ejemplo</button>
-        · Los cambios se guardan en la base de datos y requieren una cuenta autorizada.
+        · Demostración: los cambios se guardan solo en este navegador.
       </p>
     </main>
   </div>
