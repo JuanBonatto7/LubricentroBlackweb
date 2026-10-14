@@ -1,30 +1,47 @@
-# BLACK Lubricentro – tienda online (demo)
+# BLACK Lubricentro
 
-Sitio estático (HTML, CSS y JavaScript puros). No necesita instalar nada.
+Sitio web informativo y catálogo visual para BLACK Lubricentro.
 
-## Cómo verlo en tu computadora
-1. Copiá tu `logo.png` a `assets/logo/logo.png` (si falta, se muestra el texto "BLACK").
-2. Abrí la carpeta con VS Code y usá la extensión **Live Server** ("Go Live"), o abrí `index.html` directamente.
+## Estructura
 
-## Páginas
-| Archivo | Qué es |
-|---|---|
-| `index.html` | Inicio: categorías y productos destacados |
-| `productos.html` | Catálogo con búsqueda y categorías |
-| `carrito.html` / `checkout.html` / `pedido.html` | Carrito, datos del pedido y confirmación |
-| `lubricentro.html` / `contacto.html` | Servicios y datos de contacto |
-| `admin.html` | Panel de administración (demo): productos y pedidos |
+- `index.html`: estructura semántica de la página, navegación, servicios, catálogo demo, presentación y contacto.
+- `css/styles.css`: estilos visuales, variables de color y diseño responsive mobile-first.
+- `js/script.js`: comportamiento mínimo del menú hamburguesa en pantallas pequeñas.
+- `assets/images/`: imágenes generales del sitio, como el fondo del hero.
+- `assets/products/`: imágenes de productos del catálogo.
+- `assets/logo/`: logo oficial de BLACK.
 
-## Qué cambiar antes de mostrarlo
-- **Datos del negocio** (teléfono, WhatsApp, dirección, Instagram, horarios): `js/config.js`
-- **Productos, precios, stock y categorías**: `js/products-data.js` (o desde `admin.html`)
-- **Fotos de productos**: guardarlas en `assets/products/` y poner la ruta en el producto
+## Próximos reemplazos
 
-## Importante: es una demo
-Los pedidos, el carrito y los cambios del panel se guardan **solo en el navegador de quien los hace**.
-Un pedido hecho desde el celular de un cliente **no aparece** en el panel de otra computadora.
-Para vender de verdad hace falta un backend (ver `docs/PREPARACION-BACKEND.md`).
+1. Agregar el logo real en `assets/logo/` y actualizar el bloque de marca de `index.html`.
+2. Agregar la imagen principal en `assets/images/hero-lubricentro.jpg`.
+3. Reemplazar los productos de demostración por productos reales y sus imágenes.
+4. Cambiar los enlaces de WhatsApp e Instagram por los datos oficiales.
+5. Completar dirección y horarios únicamente cuando sean proporcionados.
 
-## Publicarlo
-Es un sitio estático: se sube la carpeta completa tal cual (sin compilar). Antes de publicar de verdad,
-reemplazar `TU-DOMINIO` en `sitemap.xml` y `robots.txt`.
+## Backend implementado
+
+El frontend continúa siendo HTML, CSS y JavaScript sin framework. La persistencia, autenticación y operaciones administrativas se ejecutan en las Functions y Supabase descritas abajo.
+
+- `netlify/functions/products.mjs`: catálogo público de productos activos.
+- `netlify/functions/orders.mjs`: crea pedidos con precios y stock validados por PostgreSQL.
+- `netlify/functions/admin-auth.mjs`: login con Supabase Auth y autorización mediante `admin_users`.
+- `netlify/functions/admin-products.mjs`: CRUD administrativo de productos.
+- `netlify/functions/admin-orders.mjs`: consulta y actualización administrativa de pedidos.
+- `netlify/functions/_shared/supabase.mjs`: clientes Supabase, CORS, autenticación y respuestas comunes.
+- `supabase/schema.sql`: tablas, índices, RLS y funciones transaccionales para pedidos/cancelaciones.
+- `supabase/seed.sql`: categorías y los 21 productos demo actuales.
+- `supabase/admin-user.sql`: plantilla para autorizar el primer administrador.
+- `netlify.toml`, `.env.example`, `.gitignore`, `package.json`: configuración local y de despliegue.
+
+### Configuración rápida
+
+1. Creá un proyecto en Supabase.
+2. En Supabase SQL Editor ejecutá `supabase/schema.sql` y luego `supabase/seed.sql`.
+3. En Authentication > Users creá el usuario administrador con email y contraseña.
+4. Copiá su UUID y email en `supabase/admin-user.sql`, y ejecutalo en SQL Editor.
+5. En Netlify configurá `SUPABASE_URL`, `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` como variables de entorno. La service role key solo debe existir en Netlify Functions.
+6. En local copiá `.env.example` a `.env` y completá esos valores. No subas `.env` al repositorio.
+7. Instalá dependencias con `npm install` y ejecutá `npx netlify dev`.
+
+El catálogo, checkout y panel ya apuntan a `/api/*`. Las imágenes se administran por URL; no se agregó Supabase Storage porque el modelo actual puede funcionar sin carga de archivos. Los productos y pedidos reales requieren un proyecto Supabase configurado: en este entorno no se pudo probar una operación contra una base externa.

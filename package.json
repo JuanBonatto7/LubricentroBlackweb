@@ -1,0 +1,16 @@
+{
+  "name": "black-lubricentro",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "check": "node --check netlify/functions/products.mjs && node --check netlify/functions/orders.mjs && node --check netlify/functions/admin-auth.mjs && node --check netlify/functions/admin-products.mjs && node --check netlify/functions/admin-orders.mjs",
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^23.5.0"
+  }
+}
