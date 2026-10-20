@@ -219,6 +219,17 @@
     form.elements.name.focus();
   }
   $('#new-product').addEventListener('click', () => openForm(null));
+
+  /* Compartir el catálogo con los clientes */
+  const shareMsg = $('#share-msg');
+  let shareTimer;
+  $('#share-catalog').addEventListener('click', async () => {
+    const r = await B.shareCatalog();
+    const text = { copied: 'Link del catálogo copiado. Pegalo en WhatsApp, Instagram o donde quieras.', shared: '¡Catálogo compartido!' }[r] || '';
+    shareMsg.textContent = text;
+    clearTimeout(shareTimer);
+    if (text) shareTimer = setTimeout(() => { shareMsg.textContent = ''; }, 5000);
+  });
   const closeForm = () => { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); };
   $('#p-cancel').addEventListener('click', closeForm);
 

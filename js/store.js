@@ -78,6 +78,21 @@
   const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const waLink = (text) => `https://wa.me/${cfg.business.whatsapp}` + (text ? `?text=${encodeURIComponent(text)}` : '');
 
+  /* Compartir el link del catálogo (productos.html).
+     Celular: abre el menú de compartir del teléfono. Si no existe, copia el link.
+     Devuelve 'shared', 'cancelled', 'copied' o 'manual'. */
+  async function shareCatalog() {
+    const url = new URL('productos.html', location.href).href;
+    const title = `Catálogo de ${cfg.business.name}`;
+    const text = `Mirá los productos de ${cfg.business.name}:`;
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); return 'shared'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelled'; }
+    }
+    try { await navigator.clipboard.writeText(url); return 'copied'; } catch (e) { /* sigue abajo */ }
+    window.prompt('Copiá este link del catálogo:', url);
+    return 'manual';
+  }
+
   /* ---------- Catálogo ---------- */
   const Catalog = {
     async load() {
@@ -258,5 +273,5 @@
     }
   }, true);
 
-  window.BLACK = { cfg, Catalog, Cart, Orders, Payments, ORDER_STATUS, PAYMENT_STATUS, fmt, esc, norm, waLink, storage, SB_ON, getSB, rowToProduct };
+  window.BLACK = { cfg, Catalog, Cart, Orders, Payments, ORDER_STATUS, PAYMENT_STATUS, fmt, esc, norm, waLink, shareCatalog, storage, SB_ON, getSB, rowToProduct };
 })();

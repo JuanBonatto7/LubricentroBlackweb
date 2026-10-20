@@ -53,6 +53,15 @@
     if (e.target && e.target.classList && e.target.classList.contains('p-photo')) e.target.remove();
   }, true);
 
+  /* ---------- Compartir catálogo (página de productos) ---------- */
+  const shareBtn = $('#share-catalog');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const r = await B.shareCatalog();
+      if (r === 'copied') B.toast('Link del catálogo copiado.');
+    });
+  }
+
   /* ---------- Agregar al carrito (desde cualquier página) ---------- */
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-add]');
