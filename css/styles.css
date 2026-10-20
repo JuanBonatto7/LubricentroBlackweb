@@ -351,7 +351,7 @@ body.has-bar .toast { bottom: 96px; }
 }
 
 /* ==========================================================
-   Mejoras de diseño: logo, rubros, local, detailing y WhatsApp
+   Mejoras de diseño: marca, local, detailing y WhatsApp
    ========================================================== */
 .footer-brand .brand { padding: 6px; border-radius: 10px; }
 .footer-brand .brand-logo { width: 88px; height: 88px; }
@@ -363,22 +363,22 @@ body.has-bar .toast { bottom: 96px; }
 .btn-ghost { border-color: rgba(255,255,255,.4); background: transparent; color: #fff; }
 .btn-ghost:hover:not(:disabled) { border-color: #fff; }
 
-/* Dos rubros */
-.rubros { display: grid; gap: 14px; }
-.rubro { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: #fff; text-decoration: none; transition: border-color .15s, transform .15s; }
-.rubro:hover { border-color: var(--red); transform: translateY(-2px); }
-.rubro-photo img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: center 42%; background: var(--bg); }
-.rubro-dark { border-color: var(--black); background: var(--black); color: #fff; }
-.rubro-art { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 6%; overflow: hidden; aspect-ratio: 16 / 10; padding: 6% 0 4%; background: radial-gradient(circle at 50% 40%, #2b3138, #0c0f12 75%); }
-.rubro-art::before { content: ""; position: absolute; top: 0; right: 16%; width: 54px; height: 100%; background: var(--red); transform: skewX(-24deg); }
-.rubro-art svg { position: relative; width: 20%; height: 72%; filter: drop-shadow(0 12px 12px rgba(0,0,0,.55)); }
-.rubro-art svg:nth-child(2) { width: 24%; height: 88%; }
-.rubro-body { display: flex; flex: 1; flex-direction: column; gap: 6px; padding: 18px; }
-.rubro-body h3 { margin: 0; font-size: 1.9rem; font-weight: 800; text-transform: uppercase; }
-.rubro-body p { margin: 0 0 4px; color: var(--muted); }
-.rubro-dark .rubro-body p { color: #c9ced3; }
-.rubro .text-link { margin-top: auto; }
-.rubro-dark .text-link { color: #fff; }
+/* Marca en el inicio */
+.hero-title { display: flex; flex-direction: column; gap: 6px; max-width: none; }
+.hero .hero-brand { font-size: clamp(4.2rem, 19vw, 8.5rem); line-height: .85; letter-spacing: .03em; }
+.hero-sub { max-width: 520px; color: #fff; font-size: clamp(1.45rem, 5.2vw, 2.3rem); line-height: 1.02; }
+.hero-sub::before { content: ""; display: block; width: 64px; height: 5px; margin: 10px 0 12px; background: var(--red); }
+.hero-logo-wrap { position: relative; display: grid; order: -1; place-items: center; }
+.hero-logo { width: 132px; height: 132px; border-radius: 50%; background: #fff; object-fit: contain; box-shadow: 0 0 0 5px var(--red), 0 18px 40px rgba(0,0,0,.6); }
+
+/* Encabezado oscuro de Lubricentro y Detailing (mismo estilo que el inicio) */
+.page-head-dark { position: relative; overflow: hidden; border-bottom: 0; background: var(--black); color: #fff; }
+.page-head-dark .container { position: relative; }
+.page-head-dark .lead { color: #c9ced3; }
+.page-head-dark .hero-kicker { margin: 0 0 8px; color: #ff8a93; font-size: .82rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.page-head-slash { position: absolute; top: 0; right: 4%; width: 46px; height: 100%; background: var(--red); transform: skewX(-24deg); }
+.service-item { border-top: 3px solid var(--red); }
+.service-ico { width: 32px; height: 32px; color: var(--red); }
 
 /* Local (página de lubricentro) */
 .local-card { display: grid; overflow: hidden; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
@@ -398,7 +398,7 @@ body.has-bar .toast { bottom: 96px; }
 
 /* Compartir catálogo */
 .page-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
-.btn-share { min-height: 44px; padding: 0 16px; font-size: .95rem; }
+.btn-share { min-height: 46px; padding: 0 18px; font-size: .98rem; box-shadow: 0 6px 16px rgba(225,29,46,.3); }
 .adm-toolbar-actions { display: flex; gap: 8px; }
 .adm-toolbar-actions .btn { flex: 1; padding: 0 14px; }
 .share-msg { margin: -4px 0 10px; color: var(--ok); font-size: .9rem; font-weight: 600; }
@@ -429,16 +429,18 @@ body.has-bar .toast { bottom: 96px; }
   .wa-float-label { display: inline; }
 }
 @media (min-width: 760px) {
-  .rubros { grid-template-columns: 1fr 1fr; }
   .local-card { grid-template-columns: minmax(260px, 340px) 1fr; align-items: stretch; }
   .local-card img { height: 100%; aspect-ratio: auto; }
   .local-card-body { align-self: center; padding: 24px 28px; }
 }
 @media (min-width: 900px) {
   .cat-grid-det { grid-template-columns: repeat(5, 1fr); }
+  .hero-logo-wrap { order: 0; height: 320px; }
+  .hero-logo { width: 240px; height: 240px; box-shadow: 0 0 0 8px var(--red), 0 24px 50px rgba(0,0,0,.65); }
+  .page-head-slash { right: 12%; width: 90px; }
   .footer-bottom { padding-bottom: 24px; }
 }
-@media (prefers-reduced-motion: reduce) { .rubro, .wa-float { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .wa-float { transition: none; } }
 
 /* ==========================================================
    Panel de administración (admin.html)
