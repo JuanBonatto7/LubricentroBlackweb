@@ -48,6 +48,7 @@
     ['index.html', 'Inicio', 'home'],
     ['productos.html', 'Productos', 'productos'],
     ['lubricentro.html', 'Lubricentro', 'lubricentro'],
+    ['detailing.html', 'Detailing', 'detailing'],
     ['contacto.html', 'Contacto', 'contacto'],
   ];
   const header = document.getElementById('site-header');
@@ -55,7 +56,7 @@
     header.innerHTML = `
     <div class="container header-inner">
       <a class="brand" href="index.html" aria-label="${esc(b.name)}, inicio">
-        <img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="112" height="60">
+        <img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="64" height="64">
       </a>
       <nav class="site-nav" id="site-nav" aria-label="Principal">
         ${nav.map(([href, label, id]) => `<a href="${href}"${id === page ? ' aria-current="page"' : ''}>${label}</a>`).join('')}
@@ -103,8 +104,8 @@
     footer.innerHTML = `
     <div class="container footer-grid">
       <div class="footer-brand">
-        <a class="brand" href="index.html" aria-label="${esc(b.name)}, inicio"><img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="112" height="60" loading="lazy"></a>
-        <p>Productos para el cuidado y mantenimiento de tu vehículo en Río Cuarto.</p>
+        <a class="brand" href="index.html" aria-label="${esc(b.name)}, inicio"><img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="88" height="88" loading="lazy"></a>
+        <p>Lubricentro y cosmética vehicular en Río Cuarto: service, lubricantes y productos de detailing.</p>
       </div>
       <div>
         <h2>Tienda</h2>
@@ -112,6 +113,7 @@
           <li><a href="productos.html">Productos</a></li>
           <li><a href="carrito.html">Carrito</a></li>
           <li><a href="lubricentro.html">Servicios de lubricentro</a></li>
+          <li><a href="detailing.html">Detailing</a></li>
         </ul>
       </div>
       <div>
@@ -131,6 +133,15 @@
       </div>
     </div>
     <div class="container footer-bottom">© ${new Date().getFullYear()} ${esc(b.name)}. Todos los derechos reservados.</div>`;
+  }
+
+  /* ---------- Botón flotante de WhatsApp ----------
+     No se muestra en carrito y checkout, donde la barra inferior ya ocupa ese lugar. */
+  if (b.whatsapp && !['carrito', 'checkout'].includes(page)) {
+    document.body.insertAdjacentHTML('beforeend', `
+    <a class="wa-float" href="${window.BLACK.waLink('Hola BLACK, quiero hacer una consulta.')}" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
+      <svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg><span class="wa-float-label">WhatsApp</span>
+    </a>`);
   }
 
   /* ---------- Aviso breve (toast) ---------- */
