@@ -48,7 +48,6 @@
     ['index.html', 'Inicio', 'home'],
     ['productos.html', 'Productos', 'productos'],
     ['lubricentro.html', 'Lubricentro', 'lubricentro'],
-    ['detailing.html', 'Detailing', 'detailing'],
     ['contacto.html', 'Contacto', 'contacto'],
   ];
   const header = document.getElementById('site-header');
@@ -113,7 +112,6 @@
           <li><a href="productos.html">Productos</a></li>
           <li><a href="carrito.html">Carrito</a></li>
           <li><a href="lubricentro.html">Servicios de lubricentro</a></li>
-          <li><a href="detailing.html">Detailing</a></li>
         </ul>
       </div>
       <div>

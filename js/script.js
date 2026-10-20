@@ -92,22 +92,6 @@
   }
 
   /* ==========================================================
-     DETAILING (productos de las categorías de detailing)
-     ========================================================== */
-  const DETAILING_CATS = ['detailing', 'limpieza-exterior', 'limpieza-interior', 'ceras-abrillantadores', 'accesorios'];
-  function initDetailing() {
-    const grid = $('#detailing-products');
-    if (!grid) return;
-    const list = Catalog.products()
-      .filter((p) => DETAILING_CATS.includes(p.category))
-      .sort((a, b) => (Catalog.isAvailable(b) - Catalog.isAvailable(a)) || ((b.featured ? 1 : 0) - (a.featured ? 1 : 0)))
-      .slice(0, 8);
-    grid.innerHTML = list.length
-      ? list.map(productCard).join('')
-      : '<div class="empty"><p>Pronto vas a ver acá nuestros productos de detailing.</p></div>';
-  }
-
-  /* ==========================================================
      PRODUCTOS (catálogo con búsqueda, categorías y orden)
      ========================================================== */
   function initCatalog() {
@@ -494,7 +478,6 @@
   Catalog.load().then(() => {
     if (page === 'home') initHome();
     else if (page === 'productos') initCatalog();
-    else if (page === 'detailing') initDetailing();
     else if (page === 'carrito') initCart();
     else if (page === 'checkout') initCheckout();
     else if (page === 'pedido') initOrderDone();

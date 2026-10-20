@@ -351,7 +351,7 @@ body.has-bar .toast { bottom: 96px; }
 }
 
 /* ==========================================================
-   Mejoras de diseño: marca, local, detailing y WhatsApp
+   Mejoras de diseño: marca, local y WhatsApp
    ========================================================== */
 .footer-brand .brand { padding: 6px; border-radius: 10px; }
 .footer-brand .brand-logo { width: 88px; height: 88px; }
@@ -371,7 +371,7 @@ body.has-bar .toast { bottom: 96px; }
 .hero-logo-wrap { position: relative; display: grid; order: -1; place-items: center; }
 .hero-logo { width: 132px; height: 132px; border-radius: 50%; background: #fff; object-fit: contain; box-shadow: 0 0 0 5px var(--red), 0 18px 40px rgba(0,0,0,.6); }
 
-/* Encabezado oscuro de Lubricentro y Detailing (mismo estilo que el inicio) */
+/* Encabezado oscuro de Lubricentro (mismo estilo que el inicio) */
 .page-head-dark { position: relative; overflow: hidden; border-bottom: 0; background: var(--black); color: #fff; }
 .page-head-dark .container { position: relative; }
 .page-head-dark .lead { color: #c9ced3; }
@@ -388,13 +388,7 @@ body.has-bar .toast { bottom: 96px; }
 .local-card-body p { color: var(--muted); }
 .local-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
 
-/* Detailing */
-.cat-grid-det { grid-template-columns: 1fr; }
-.cat-tile-lg { align-items: flex-start; padding: 16px; }
-.cat-tile-lg span { display: flex; flex-direction: column; gap: 3px; }
-.cat-tile-lg small { color: var(--muted); font-size: .86rem; font-weight: 500; }
-.det-head { margin-top: 32px; }
-.det-callout { margin-top: 24px; }
+.actions-row { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* Compartir catálogo */
 .page-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
@@ -423,7 +417,6 @@ body.has-bar .toast { bottom: 96px; }
   .hero-actions .btn { flex: 1 1 auto; }
 }
 @media (min-width: 600px) {
-  .cat-grid-det { grid-template-columns: repeat(2, 1fr); }
   .service-item:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .wa-float { width: auto; padding: 0 20px 0 16px; }
   .wa-float-label { display: inline; }
@@ -434,7 +427,6 @@ body.has-bar .toast { bottom: 96px; }
   .local-card-body { align-self: center; padding: 24px 28px; }
 }
 @media (min-width: 900px) {
-  .cat-grid-det { grid-template-columns: repeat(5, 1fr); }
   .hero-logo-wrap { order: 0; height: 320px; }
   .hero-logo { width: 240px; height: 240px; box-shadow: 0 0 0 8px var(--red), 0 24px 50px rgba(0,0,0,.65); }
   .page-head-slash { right: 12%; width: 90px; }
