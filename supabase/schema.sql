@@ -1,5 +1,13 @@
+-- ==========================================================
+-- BLACK – estructura de la base de datos (Supabase)
+-- Refleja el proyecto en producción al 20/10/2026.
+-- Se puede ejecutar varias veces: no borra datos.
+-- Orden en un proyecto nuevo: schema.sql → seed.sql → admin-user.sql
+-- ==========================================================
+
 create extension if not exists pgcrypto;
 
+-- ---------- Tablas ----------
 create table if not exists public.categories (
   id text primary key check (id ~ '^[a-z0-9-]+$'),
   name text not null check (char_length(name) between 1 and 120),
@@ -72,41 +80,89 @@ create index if not exists products_category_idx on public.products(category_id)
 create index if not exists orders_status_idx on public.orders(status, created_at desc);
 create index if not exists order_items_order_idx on public.order_items(order_id);
 
-create or replace function public.touch_updated_at() returns trigger language plpgsql as $$
+-- ---------- updated_at automático ----------
+create or replace function public.touch_updated_at() returns trigger
+language plpgsql set search_path = '' as $$
 begin new.updated_at = now(); return new; end;
 $$;
 drop trigger if exists products_touch_updated_at on public.products;
-create trigger products_touch_updated_at before update on public.products for each row execute function public.touch_updated_at();
+create trigger products_touch_updated_at before update on public.products
+  for each row execute function public.touch_updated_at();
 
-create or replace function public.is_admin() returns boolean language sql security definer set search_path = public as $$
+-- ---------- ¿El usuario actual es administrador? ----------
+-- Debe poder ejecutarla cualquiera (también anon): la usan las políticas de lectura.
+-- Para quien no está en admin_users devuelve false.
+create or replace function public.is_admin() returns boolean
+language sql security definer set search_path = public as $$
   select exists (select 1 from public.admin_users where user_id = auth.uid());
 $$;
 
-alter table public.categories enable row level security;
-alter table public.products enable row level security;
+-- ---------- Row Level Security ----------
+alter table public.categories  enable row level security;
+alter table public.products    enable row level security;
 alter table public.admin_users enable row level security;
-alter table public.orders enable row level security;
+alter table public.orders      enable row level security;
 alter table public.order_items enable row level security;
 
+-- Nombres anteriores (por si se ejecuta sobre una base vieja)
 drop policy if exists categories_public_read on public.categories;
-create policy categories_public_read on public.categories for select using (true);
-drop policy if exists products_public_read on public.products;
-create policy products_public_read on public.products for select using (active = true);
-drop policy if exists categories_admin_all on public.categories;
-create policy categories_admin_all on public.categories for all using (public.is_admin()) with check (public.is_admin());
-drop policy if exists products_admin_all on public.products;
-create policy products_admin_all on public.products for all using (public.is_admin()) with check (public.is_admin());
-drop policy if exists admin_users_self_read on public.admin_users;
-create policy admin_users_self_read on public.admin_users for select using (auth.uid() = user_id);
+drop policy if exists categories_admin_all   on public.categories;
+drop policy if exists products_public_read   on public.products;
+drop policy if exists products_admin_all     on public.products;
 
-create or replace function public.create_order(p_payload jsonb, p_idempotency_key text) returns jsonb language plpgsql security definer set search_path = public as $$
+-- categories: todos leen; solo el admin escribe
+drop policy if exists categories_read on public.categories;
+create policy categories_read on public.categories
+  for select to anon, authenticated using (true);
+drop policy if exists categories_admin_insert on public.categories;
+create policy categories_admin_insert on public.categories
+  for insert to authenticated with check ((select public.is_admin()));
+drop policy if exists categories_admin_update on public.categories;
+create policy categories_admin_update on public.categories
+  for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+drop policy if exists categories_admin_delete on public.categories;
+create policy categories_admin_delete on public.categories
+  for delete to authenticated using ((select public.is_admin()));
+
+-- products: todos leen los activos; el admin lee todos y es el único que escribe
+drop policy if exists products_read on public.products;
+create policy products_read on public.products
+  for select to anon, authenticated using (active = true or (select public.is_admin()));
+drop policy if exists products_admin_insert on public.products;
+create policy products_admin_insert on public.products
+  for insert to authenticated with check ((select public.is_admin()));
+drop policy if exists products_admin_update on public.products;
+create policy products_admin_update on public.products
+  for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+drop policy if exists products_admin_delete on public.products;
+create policy products_admin_delete on public.products
+  for delete to authenticated using ((select public.is_admin()));
+
+-- admin_users: cada usuario solo ve su propia fila (sirve para saber si es admin)
+drop policy if exists admin_users_self_read on public.admin_users;
+create policy admin_users_self_read on public.admin_users
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+-- orders / order_items: solo el admin. Los clientes crean pedidos con create_order().
+drop policy if exists orders_admin_all on public.orders;
+create policy orders_admin_all on public.orders
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+drop policy if exists order_items_admin_all on public.order_items;
+create policy order_items_admin_all on public.order_items
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+
+-- ---------- Crear pedido (lo llama la tienda) ----------
+-- Recalcula precios con la base, verifica y descuenta stock y asigna el número.
+-- Las variables llevan prefijo v_ para no chocar con columnas (p. ej. "total").
+create or replace function public.create_order(p_payload jsonb, p_idempotency_key text) returns jsonb
+language plpgsql security definer set search_path = public as $$
 declare
   existing public.orders;
   item jsonb;
   product_row public.products;
-  order_id bigint;
-  order_number text;
-  total numeric(12,2) := 0;
+  v_order_id bigint;
+  v_order_number text;
+  v_total numeric(12,2) := 0;
   items_snapshot jsonb := '[]'::jsonb;
   qty integer;
   unit numeric(12,2);
@@ -117,42 +173,67 @@ begin
   if p_idempotency_key is null or char_length(p_idempotency_key) < 16 then raise exception using message = 'Clave de idempotencia inválida', errcode = '22023'; end if;
   select * into existing from public.orders where idempotency_key = p_idempotency_key;
   if found then return jsonb_build_object('number', existing.number, 'status', existing.status, 'total', existing.total, 'createdAt', existing.created_at, 'duplicate', true); end if;
-  if length(trim(customer->>'name')) < 2 or length(trim(customer->>'phone')) < 8 or position('@' in customer->>'email') < 2 then raise exception using message = 'Datos del cliente inválidos', errcode = '22023'; end if;
-  if delivery->>'method' not in ('retiro','envio') then raise exception using message = 'Método de entrega inválido', errcode = '22023'; end if;
-  if delivery->>'method' = 'envio' and length(trim(delivery->>'address')) < 5 then raise exception using message = 'La dirección es obligatoria', errcode = '22023'; end if;
-  if jsonb_typeof(p_payload->'items') <> 'array' or jsonb_array_length(p_payload->'items') = 0 then raise exception using message = 'El pedido no tiene productos', errcode = '22023'; end if;
+  if length(trim(coalesce(customer->>'name',''))) < 2 or length(trim(coalesce(customer->>'phone',''))) < 8 or position('@' in coalesce(customer->>'email','')) < 2 then raise exception using message = 'Datos del cliente inválidos', errcode = '22023'; end if;
+  if coalesce(delivery->>'method','') not in ('retiro','envio') then raise exception using message = 'Método de entrega inválido', errcode = '22023'; end if;
+  if delivery->>'method' = 'envio' and length(trim(coalesce(delivery->>'address',''))) < 5 then raise exception using message = 'La dirección es obligatoria', errcode = '22023'; end if;
+  if jsonb_typeof(p_payload->'items') is distinct from 'array' or jsonb_array_length(p_payload->'items') = 0 then raise exception using message = 'El pedido no tiene productos', errcode = '22023'; end if;
 
-  order_number := 'BK-' || lpad(nextval('public.order_number_seq')::text, 6, '0');
+  v_order_number := 'BK-' || lpad(nextval('public.order_number_seq')::text, 6, '0');
   insert into public.orders(number, idempotency_key, customer_name, customer_phone, customer_email, delivery_method, delivery_address, notes, total)
-  values (order_number, p_idempotency_key, trim(customer->>'name'), trim(customer->>'phone'), lower(trim(customer->>'email')), delivery->>'method', coalesce(delivery->>'address',''), coalesce(delivery->>'notes',''), 0)
-  returning id into order_id;
+  values (v_order_number, p_idempotency_key, trim(customer->>'name'), trim(customer->>'phone'), lower(trim(customer->>'email')), delivery->>'method', coalesce(delivery->>'address',''), coalesce(delivery->>'notes',''), 0)
+  returning id into v_order_id;
 
   for item in select * from jsonb_array_elements(p_payload->'items') loop
     qty := (item->>'quantity')::integer;
     if qty is null or qty < 1 or qty > 100 then raise exception using message = 'Cantidad inválida', errcode = '22023'; end if;
     select * into product_row from public.products where id = item->>'productId' and active = true for update;
     if not found or product_row.sold_out or product_row.stock < qty then raise exception using message = 'Producto sin stock o no disponible', errcode = 'P0001'; end if;
-    unit := product_row.price; line_total := unit * qty; total := total + line_total;
-    insert into public.order_items(order_id, product_id, name, unit_price, quantity, subtotal) values (order_id, product_row.id, product_row.name, unit, qty, line_total);
+    unit := product_row.price; line_total := unit * qty; v_total := v_total + line_total;
+    insert into public.order_items(order_id, product_id, name, unit_price, quantity, subtotal) values (v_order_id, product_row.id, product_row.name, unit, qty, line_total);
     update public.products set stock = stock - qty, sold_out = (stock - qty = 0) where id = product_row.id;
     items_snapshot := items_snapshot || jsonb_build_array(jsonb_build_object('productId', product_row.id, 'name', product_row.name, 'unitPrice', unit, 'quantity', qty, 'subtotal', line_total));
   end loop;
-  update public.orders set total = total where id = order_id;
-  return jsonb_build_object('number', order_number, 'status', 'pendiente_pago', 'payment', jsonb_build_object('status','pendiente'), 'total', total, 'items', items_snapshot, 'createdAt', now());
+
+  update public.orders set total = v_total where id = v_order_id;
+  return jsonb_build_object('number', v_order_number, 'status', 'pendiente_pago', 'payment', jsonb_build_object('status','pendiente'), 'total', v_total, 'items', items_snapshot, 'createdAt', now());
 end;
 $$;
 
-create or replace function public.update_order_status(p_number text, p_status public.order_status) returns jsonb language plpgsql security definer set search_path = public as $$
+-- ---------- Cambiar estado de un pedido (solo admin) ----------
+create or replace function public.update_order_status(p_number text, p_status public.order_status) returns jsonb
+language plpgsql security definer set search_path = public as $$
 declare o public.orders; item record;
 begin
+  if not public.is_admin() then raise exception using message = 'No autorizado', errcode = '42501'; end if;
   select * into o from public.orders where number = p_number for update;
   if not found then raise exception using message = 'Pedido inexistente', errcode = 'P0002'; end if;
   if o.status = 'cancelado' and p_status <> 'cancelado' then raise exception using message = 'Un pedido cancelado no puede reabrirse', errcode = '22023'; end if;
   if p_status = 'cancelado' and o.status <> 'cancelado' and o.stock_restored_at is null then
-    for item in select product_id, quantity from public.order_items where order_id = o.id loop update public.products set stock = stock + item.quantity, sold_out = false where id = item.product_id; end loop;
+    for item in select product_id, quantity from public.order_items where order_id = o.id loop
+      update public.products set stock = stock + item.quantity, sold_out = false where id = item.product_id;
+    end loop;
     update public.orders set stock_restored_at = now() where id = o.id;
   end if;
   update public.orders set status = p_status where id = o.id returning * into o;
   return jsonb_build_object('number', o.number, 'status', o.status, 'total', o.total, 'stockRestoredAt', o.stock_restored_at);
 end;
 $$;
+-- Los visitantes sin login no pueden llamarla (además valida is_admin por dentro).
+revoke execute on function public.update_order_status(text, public.order_status) from public, anon;
+grant execute on function public.update_order_status(text, public.order_status) to authenticated;
+
+-- ---------- Storage: fotos de productos ----------
+-- Bucket público para leer, máximo 2 MB, solo JPG/PNG/WebP. Solo el admin sube, cambia o borra.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('product-images', 'product-images', true, 2097152, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do update set public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists imagenes_lectura_publica on storage.objects;
+create policy imagenes_lectura_publica on storage.objects
+  for select using (bucket_id = 'product-images');
+drop policy if exists imagenes_admin_escribe on storage.objects;
+create policy imagenes_admin_escribe on storage.objects
+  for all using (bucket_id = 'product-images' and public.is_admin())
+  with check (bucket_id = 'product-images' and public.is_admin());
