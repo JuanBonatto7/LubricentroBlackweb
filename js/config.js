@@ -5,15 +5,17 @@
 window.BLACK_CONFIG = {
   business: {
     name: 'BLACK Lubricentro y Cosmética Vehicular',
-    // ⚠️ Datos de ejemplo: reemplazar por los reales.
-    phone: '+54 9 358 123 4567',
-    whatsapp: '5493581234567',          // formato internacional, sin + ni espacios
-    instagram: 'black.lubricentro',
-    address: 'Av. San Martín 1234',
+    shortName: 'BLACK',
+    // ⚠️ NÚMERO DE PRUEBA (Juan). Antes de publicar, cambiar phone y whatsapp por el del local.
+    phone: '+54 9 358 654-8564',
+    whatsapp: '5493586548564',          // a este número llegan los pedidos. Formato: 549 + característica + número, sin + ni espacios
+    instagram: 'blackcardetail78',
+    address: 'Av. Marcelo T. de Alvear 1961',
     city: 'Río Cuarto, Córdoba',
     hours: [
-      ['Lunes a viernes', '8:00 – 20:00'],
-      ['Sábados', '8:00 – 14:00'],
+      ['Lunes a viernes', '8:00 – 12:30 y 16:00 – 20:00'],
+      ['Sábados', '9:00 – 13:00'],
+      ['Domingos', 'Cerrado'],
     ],
   },
 
@@ -37,10 +39,15 @@ window.BLACK_CONFIG = {
     paymentPreference: '',  // POST → { orderNumber } → { checkoutUrl } (Mercado Pago)
   },
 
-  payments: { provider: 'none' },
+  payments: {
+    provider: 'none',
+    /* Medios de pago que elige el cliente al hacer el pedido (se mandan en el mensaje de WhatsApp).
+       ⚠️ Confirmar con el local cuáles acepta. El primero queda elegido por defecto. */
+    methods: ['A coordinar por WhatsApp', 'Efectivo', 'Transferencia', 'Mercado Pago', 'Tarjeta de débito o crédito'],
+  },
 
   delivery: [
-    { id: 'retiro', label: 'Retiro en el local', note: 'Sin costo. Te avisamos cuando tu pedido esté listo.', needsAddress: false },
-    { id: 'envio', label: 'Envío a domicilio', note: 'El costo y la zona de entrega se coordinan con el local.', needsAddress: true },
+    { id: 'retiro', label: 'Retiro en el local', note: 'Sin costo. Te avisamos por WhatsApp cuando esté listo.', needsAddress: false },
+    { id: 'envio', label: 'Envío a domicilio', note: 'Solo dentro de Río Cuarto. El costo se coordina por WhatsApp.', needsAddress: true },
   ],
 };

@@ -135,7 +135,7 @@
 
   /* ---------- Botón flotante de WhatsApp ----------
      No se muestra en carrito y checkout, donde la barra inferior ya ocupa ese lugar. */
-  if (b.whatsapp && !['carrito', 'checkout'].includes(page)) {
+  if (b.whatsapp && !['carrito', 'checkout', 'admin'].includes(page)) {
     document.body.insertAdjacentHTML('beforeend', `
     <a class="wa-float" href="${window.BLACK.waLink('Hola BLACK, quiero hacer una consulta.')}" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
       <svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg><span class="wa-float-label">WhatsApp</span>

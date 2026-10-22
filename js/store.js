@@ -47,6 +47,7 @@
     featured: !!r.featured,
     active: r.active !== false,
     image: r.image_url || '',
+    brand: r.brand_id || '',
     art: r.art && r.art.shape ? r.art : { shape: 'bottle', color: '#e11d2e' },
   });
 
@@ -106,6 +107,9 @@
           if (c.error || p.error) throw (c.error || p.error);
           window.BLACK_CATEGORIES = c.data.map((x) => ({ id: x.id, name: x.name, icon: x.icon }));
           window.BLACK_PRODUCTS = p.data.map(rowToProduct);
+          /* Las marcas se leen aparte: si fallan, el catálogo se muestra igual, sin marcas */
+          const b = await sb.from('brands').select('id, name').order('name');
+          window.BLACK_BRANDS = b.error ? [] : b.data;
         } catch (e) {
           console.warn('No se pudo leer el catálogo de Supabase; se usa el catálogo local.', e);
         }
@@ -128,6 +132,8 @@
     products() { return (window.BLACK_PRODUCTS || []).filter((p) => p.active !== false); },
     get(id) { return this.products().find((p) => p.id === id); },
     categoryName(id) { const c = this.categories().find((x) => x.id === id); return c ? c.name : ''; },
+    brands() { return window.BLACK_BRANDS || []; },
+    brandName(id) { const b = this.brands().find((x) => x.id === id); return b ? b.name : ''; },
     isAvailable(p) { return !p.soldOut && p.stock > 0; },
   };
 
@@ -206,8 +212,9 @@
       const items = lines.map((l) => ({ productId: l.product.id, name: l.product.name, unitPrice: l.unitPrice, quantity: l.qty, subtotal: l.subtotal }));
       const method = cfg.delivery.find((d) => d.id === form.delivery) || cfg.delivery[0];
       return {
-        customer: { name: form.name, phone: form.phone, email: form.email },
+        customer: { name: form.name, phone: form.phone },
         delivery: { method: method.id, label: method.label, address: method.needsAddress ? form.address : '', notes: form.notes },
+        paymentMethod: form.payment || '',
         items,
         total: items.reduce((s, i) => s + i.subtotal, 0),
       };
@@ -246,6 +253,24 @@
       return order;
     },
     last() { return storage.get(KEYS.last, null); },
+    /* Mensaje de WhatsApp con la orden completa. Se arma con los datos que devolvió
+       la base (precios y total recalculados), no con lo que tenía el carrito. */
+    whatsappText(o) {
+      const L = [];
+      L.push(`Hola ${cfg.business.shortName || cfg.business.name}! Quiero confirmar este pedido:`);
+      L.push('');
+      L.push(`*Pedido ${o.number}*`);
+      (o.items || []).forEach((i) => L.push(`- ${i.quantity} x ${i.name}: ${fmt(Number(i.subtotal))}`));
+      const envio = o.delivery && o.delivery.method === 'envio';
+      L.push(`*Total: ${fmt(Number(o.total))}*${envio ? ' + envío (a coordinar)' : ''}`);
+      L.push('');
+      L.push(`Nombre: ${o.customer.name}`);
+      L.push(`Teléfono: ${o.customer.phone}`);
+      L.push(`Entrega: ${o.delivery.label}${envio && o.delivery.address ? ` - ${o.delivery.address} (Río Cuarto)` : ''}`);
+      L.push(`Medio de pago: ${o.paymentMethod || 'A coordinar'}`);
+      if (o.delivery.notes) L.push(`Observaciones: ${o.delivery.notes}`);
+      return L.join('\n');
+    },
   };
 
   /* ---------- Pagos (sin integración real todavía) ---------- */

@@ -6,7 +6,8 @@
 
    CATEGORÍAS: agregar, quitar o renombrar libremente. `id` es el que usan
    los productos y la URL (productos.html?categoria=<id>). `icon` es uno de:
-   spark, car, seat, shield, bag, drop, filter, wrench, dots.
+   spark, car, seat, shield, bag, drop, filter, wrench, dots
+   (también se pueden editar desde el panel: Categorías y marcas).
 
    PRODUCTOS:
      id          texto único, sin espacios (ej. 'cera-liquida')
@@ -25,15 +26,13 @@
    ⚠️ Nombres, precios y stock de abajo son de ejemplo.
    ========================================================== */
 window.BLACK_CATEGORIES = [
-  { id: 'detailing', name: 'Detailing', icon: 'spark' },
   { id: 'limpieza-exterior', name: 'Limpieza exterior', icon: 'car' },
   { id: 'limpieza-interior', name: 'Limpieza interior', icon: 'seat' },
   { id: 'ceras-abrillantadores', name: 'Ceras y abrillantadores', icon: 'shield' },
   { id: 'accesorios', name: 'Accesorios', icon: 'bag' },
   { id: 'lubricantes', name: 'Lubricantes', icon: 'drop' },
   { id: 'filtros', name: 'Filtros', icon: 'filter' },
-  { id: 'mantenimiento', name: 'Productos para mantenimiento', icon: 'wrench' },
-  { id: 'otros', name: 'Otros', icon: 'dots' },
+  { id: 'refrigerantes-aditivos', name: 'Refrigerantes y aditivos', icon: 'wrench' },
 ];
 
 window.BLACK_PRODUCTS = [
@@ -47,9 +46,9 @@ window.BLACK_PRODUCTS = [
   { id: 'cera-liquida', name: 'Cera líquida', description: 'Brillo y protección por más tiempo.', price: 8900, stock: 10, category: 'ceras-abrillantadores', featured: true, image: '', art: { shape: 'bottle', color: '#e11d2e' } },
   { id: 'cera-pasta', name: 'Cera en pasta', description: 'Protección intensa para la pintura.', price: 12500, stock: 0, category: 'ceras-abrillantadores', image: '', art: { shape: 'tin', color: '#e8a317' } },
 
-  { id: 'abrillantador-neumaticos', name: 'Abrillantador de neumáticos', description: 'Negro profundo y protección.', price: 6800, stock: 14, category: 'detailing', featured: true, image: '', art: { shape: 'bottle', color: '#e8a317' } },
-  { id: 'kit-lavado', name: 'Kit de lavado completo', description: 'Shampoo, esponja y paño de microfibra.', price: 28900, stock: 6, category: 'detailing', featured: true, image: '', art: { shape: 'box', color: '#e11d2e' } },
-  { id: 'arcilla-descontaminante', name: 'Arcilla descontaminante', description: 'Quita impurezas adheridas a la pintura.', price: 15800, stock: 4, category: 'detailing', image: '', art: { shape: 'tin', color: '#1fa6b8' } },
+  { id: 'abrillantador-neumaticos', name: 'Abrillantador de neumáticos', description: 'Negro profundo y protección.', price: 6800, stock: 14, category: 'ceras-abrillantadores', featured: true, image: '', art: { shape: 'bottle', color: '#e8a317' } },
+  { id: 'kit-lavado', name: 'Kit de lavado completo', description: 'Shampoo, esponja y paño de microfibra.', price: 28900, stock: 6, category: 'limpieza-exterior', featured: true, image: '', art: { shape: 'box', color: '#e11d2e' } },
+  { id: 'arcilla-descontaminante', name: 'Arcilla descontaminante', description: 'Quita impurezas adheridas a la pintura.', price: 15800, stock: 4, category: 'limpieza-exterior', image: '', art: { shape: 'tin', color: '#1fa6b8' } },
 
   { id: 'microfibra-x3', name: 'Paños de microfibra x3', description: 'Suaves, absorbentes y sin pelusa.', price: 4200, stock: 40, category: 'accesorios', featured: true, image: '', art: { shape: 'cloth', color: '#e11d2e' } },
   { id: 'aromatizante', name: 'Aromatizante', description: 'Fragancia duradera para tu auto.', price: 3900, stock: 30, category: 'accesorios', image: '', art: { shape: 'spray', color: '#1fa6b8' } },
@@ -61,9 +60,9 @@ window.BLACK_PRODUCTS = [
   { id: 'filtro-aceite', name: 'Filtro de aceite', description: 'Retiene impurezas y cuida el motor.', price: 5200, stock: 20, category: 'filtros', featured: true, image: '', art: { shape: 'filter', color: '#e11d2e' } },
   { id: 'filtro-aire', name: 'Filtro de aire', description: 'Mejor respiración y menor consumo.', price: 6800, stock: 11, category: 'filtros', image: '', art: { shape: 'filter', color: '#e8a317' } },
 
-  { id: 'refrigerante', name: 'Refrigerante 1 L', description: 'Protege el motor del sobrecalentamiento.', price: 9800, stock: 13, category: 'mantenimiento', image: '', art: { shape: 'jug', color: '#1fa6b8' } },
-  { id: 'aditivo-combustible', name: 'Aditivo para combustible', description: 'Limpia inyectores y mejora el rendimiento.', price: 4900, stock: 17, category: 'mantenimiento', image: '', art: { shape: 'bottle', color: '#2f6fd1' } },
-  { id: 'desengrasante-motor', name: 'Desengrasante de motor', description: 'Remueve grasa y suciedad del vano motor.', price: 7400, stock: 9, category: 'mantenimiento', image: '', art: { shape: 'spray', color: '#e8a317' } },
+  { id: 'refrigerante', name: 'Refrigerante 1 L', description: 'Protege el motor del sobrecalentamiento.', price: 9800, stock: 13, category: 'refrigerantes-aditivos', image: '', art: { shape: 'jug', color: '#1fa6b8' } },
+  { id: 'aditivo-combustible', name: 'Aditivo para combustible', description: 'Limpia inyectores y mejora el rendimiento.', price: 4900, stock: 17, category: 'refrigerantes-aditivos', image: '', art: { shape: 'bottle', color: '#2f6fd1' } },
+  { id: 'desengrasante-motor', name: 'Desengrasante de motor', description: 'Remueve grasa y suciedad del vano motor.', price: 7400, stock: 9, category: 'limpieza-exterior', image: '', art: { shape: 'spray', color: '#e8a317' } },
 
-  { id: 'escobillas-limpiaparabrisas', name: 'Escobillas limpiaparabrisas (par)', description: 'Barrido silencioso y sin marcas.', price: 9500, stock: 7, category: 'otros', image: '', art: { shape: 'box', color: '#2a323a' } },
+  { id: 'escobillas-limpiaparabrisas', name: 'Escobillas limpiaparabrisas (par)', description: 'Barrido silencioso y sin marcas.', price: 9500, stock: 7, category: 'accesorios', image: '', art: { shape: 'box', color: '#2a323a' } },
 ];

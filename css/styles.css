@@ -287,7 +287,7 @@ body.has-bar .toast { bottom: 96px; }
 @media (min-width: 600px) {
   .product-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .cat-grid { grid-template-columns: repeat(3, 1fr); }
-  .toolbar { grid-template-columns: 1fr 220px; }
+  .toolbar { grid-template-columns: 1fr; grid-auto-flow: column; grid-auto-columns: 210px; }
   .service-list, .contact-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-grid { grid-template-columns: 1.2fr 1fr 1fr 1.2fr; }
   .cart-label { display: inline; }
@@ -389,6 +389,20 @@ body.has-bar .toast { bottom: 96px; }
 .local-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
 
 .actions-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* Marca en la tarjeta de producto */
+.p-brand { color: var(--ink); font-weight: 700; }
+
+/* Pedido por WhatsApp */
+.btn-wa { border-color: #1d8a4a; background: #1d8a4a; color: #fff; }
+.btn-wa:hover:not(:disabled) { border-color: #156b39; background: #156b39; }
+.wa-step { margin-bottom: 18px; padding: 18px; border: 2px solid #1d8a4a; border-radius: 10px; background: #f0faf4; }
+.wa-step h2 { margin-bottom: 8px; font-size: 1.6rem; }
+.wa-step p { margin-bottom: 14px; }
+.wa-step .btn { width: 100%; }
+.wa-next { margin: 10px 0 0; text-align: center; }
+.choices-pay { grid-template-columns: 1fr; }
+@media (min-width: 600px) { .wa-step .btn { width: auto; } .choices-pay { grid-template-columns: 1fr 1fr; } }
 
 /* Compartir catálogo */
 .page-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
@@ -493,6 +507,30 @@ body.has-bar .toast { bottom: 96px; }
 .adm-check input { width: 22px; height: 22px; accent-color: var(--red); }
 .adm-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 
+/* Categorías y marcas */
+.adm-two { display: grid; gap: 16px; }
+.adm-box { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.adm-box-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.adm-box-head h2 { margin: 0; font-size: 1.7rem; }
+.adm-box-head .btn { min-height: 44px; padding: 0 14px; font-size: .92rem; }
+.adm-box .fine { margin-bottom: 12px; }
+.adm-mini { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.adm-mini .ico-lg { color: var(--red); }
+.adm-mini .adm-row-actions { grid-column: 1 / -1; }
+.adm-mini > .adm-main-info:first-child { grid-column: 1 / -1; }
+.adm-dialog-sm { width: min(100% - 24px, 420px); }
+.icon-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.icon-opt { display: grid; width: 48px; height: 48px; place-items: center; border: 2px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); cursor: pointer; }
+.icon-opt .ico { width: 24px; height: 24px; }
+.icon-opt:hover { border-color: var(--ink); }
+.icon-opt.is-on { border-color: var(--red); background: #fff6f6; color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+#cat-panel-error { margin: 0 0 12px; }
+@media (max-width: 599px) {
+  .adm-tabs { gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .adm-tabs::-webkit-scrollbar { display: none; }
+  .adm-tab { flex: none; gap: 6px; padding: 0 7px; font-size: .92rem; white-space: nowrap; }
+}
+
 .adm-order { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .adm-order summary { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 14px; cursor: pointer; list-style: none; }
 .adm-order summary::-webkit-details-marker { display: none; }
@@ -518,4 +556,8 @@ body.has-bar .toast { bottom: 96px; }
   .adm-o-total { grid-column: auto; grid-row: auto; }
   .adm-order summary .adm-badge { justify-self: end; }
   .adm-dialog form { padding: 26px 26px; }
+  .adm-two { grid-template-columns: 1fr 1fr; align-items: start; }
+  .adm-mini { grid-template-columns: auto 1fr auto; }
+  .adm-mini .adm-row-actions { grid-column: auto; }
+  .adm-mini > .adm-main-info:first-child { grid-column: 1 / 3; }
 }

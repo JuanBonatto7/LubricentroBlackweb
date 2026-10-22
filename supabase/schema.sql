@@ -1,6 +1,6 @@
 -- ==========================================================
 -- BLACK – estructura de la base de datos (Supabase)
--- Refleja el proyecto en producción al 20/10/2026.
+-- Refleja el proyecto en producción al 22/10/2026 (incluye marcas y pedido por WhatsApp).
 -- Se puede ejecutar varias veces: no borra datos.
 -- Orden en un proyecto nuevo: schema.sql → seed.sql → admin-user.sql
 -- ==========================================================
@@ -53,7 +53,7 @@ create table if not exists public.orders (
   created_at timestamptz not null default now(),
   customer_name text not null check (char_length(customer_name) between 2 and 160),
   customer_phone text not null check (char_length(customer_phone) between 8 and 30),
-  customer_email text not null check (char_length(customer_email) between 5 and 160),
+  customer_email text check (char_length(customer_email) between 5 and 160),
   delivery_method text not null check (delivery_method in ('retiro','envio')),
   delivery_address text not null default '',
   notes text not null default '',
@@ -62,6 +62,7 @@ create table if not exists public.orders (
   payment_status public.payment_status not null default 'pendiente',
   payment_provider text,
   provider_payment_id text,
+  payment_method text not null default '' check (char_length(payment_method) <= 60),
   stock_restored_at timestamptz
 );
 
@@ -74,6 +75,10 @@ create table if not exists public.order_items (
   quantity integer not null check (quantity > 0),
   subtotal numeric(12,2) not null check (subtotal >= 0)
 );
+
+-- Para bases creadas antes del 22/10/2026
+alter table public.orders add column if not exists payment_method text not null default '' check (char_length(payment_method) <= 60);
+alter table public.orders alter column customer_email drop not null;
 
 create index if not exists products_active_idx on public.products(active, featured);
 create index if not exists products_category_idx on public.products(category_id);
@@ -151,6 +156,33 @@ drop policy if exists order_items_admin_all on public.order_items;
 create policy order_items_admin_all on public.order_items
   for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
+-- ---------- Marcas ----------
+create table if not exists public.brands (
+  id text primary key check (id ~ '^[a-z0-9-]+$'),
+  name text not null check (char_length(name) between 1 and 80),
+  created_at timestamptz not null default now()
+);
+create unique index if not exists brands_name_unique on public.brands (lower(name));
+alter table public.brands enable row level security;
+
+drop policy if exists brands_read on public.brands;
+create policy brands_read on public.brands
+  for select to anon, authenticated using (true);
+drop policy if exists brands_admin_insert on public.brands;
+create policy brands_admin_insert on public.brands
+  for insert to authenticated with check ((select public.is_admin()));
+drop policy if exists brands_admin_update on public.brands;
+create policy brands_admin_update on public.brands
+  for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+drop policy if exists brands_admin_delete on public.brands;
+create policy brands_admin_delete on public.brands
+  for delete to authenticated using ((select public.is_admin()));
+
+-- Cada producto puede tener una marca. Si se borra la marca, el producto queda "sin marca".
+alter table public.products add column if not exists brand_id text
+  references public.brands(id) on delete set null;
+create index if not exists products_brand_idx on public.products(brand_id);
+
 -- ---------- Crear pedido (lo llama la tienda) ----------
 -- Recalcula precios con la base, verifica y descuenta stock y asigna el número.
 -- Las variables llevan prefijo v_ para no chocar con columnas (p. ej. "total").
@@ -169,18 +201,21 @@ declare
   line_total numeric(12,2);
   delivery jsonb := coalesce(p_payload->'delivery', '{}'::jsonb);
   customer jsonb := coalesce(p_payload->'customer', '{}'::jsonb);
+  v_email text := nullif(lower(trim(coalesce(customer->>'email', ''))), '');
+  v_payment text := left(trim(coalesce(p_payload->>'paymentMethod', '')), 60);
 begin
   if p_idempotency_key is null or char_length(p_idempotency_key) < 16 then raise exception using message = 'Clave de idempotencia inválida', errcode = '22023'; end if;
   select * into existing from public.orders where idempotency_key = p_idempotency_key;
   if found then return jsonb_build_object('number', existing.number, 'status', existing.status, 'total', existing.total, 'createdAt', existing.created_at, 'duplicate', true); end if;
-  if length(trim(coalesce(customer->>'name',''))) < 2 or length(trim(coalesce(customer->>'phone',''))) < 8 or position('@' in coalesce(customer->>'email','')) < 2 then raise exception using message = 'Datos del cliente inválidos', errcode = '22023'; end if;
+  if length(trim(coalesce(customer->>'name',''))) < 2 or length(trim(coalesce(customer->>'phone',''))) < 8 then raise exception using message = 'Datos del cliente inválidos', errcode = '22023'; end if;
+  if v_email is not null and position('@' in v_email) < 2 then raise exception using message = 'Email inválido', errcode = '22023'; end if;
   if coalesce(delivery->>'method','') not in ('retiro','envio') then raise exception using message = 'Método de entrega inválido', errcode = '22023'; end if;
   if delivery->>'method' = 'envio' and length(trim(coalesce(delivery->>'address',''))) < 5 then raise exception using message = 'La dirección es obligatoria', errcode = '22023'; end if;
   if jsonb_typeof(p_payload->'items') is distinct from 'array' or jsonb_array_length(p_payload->'items') = 0 then raise exception using message = 'El pedido no tiene productos', errcode = '22023'; end if;
 
   v_order_number := 'BK-' || lpad(nextval('public.order_number_seq')::text, 6, '0');
-  insert into public.orders(number, idempotency_key, customer_name, customer_phone, customer_email, delivery_method, delivery_address, notes, total)
-  values (v_order_number, p_idempotency_key, trim(customer->>'name'), trim(customer->>'phone'), lower(trim(customer->>'email')), delivery->>'method', coalesce(delivery->>'address',''), coalesce(delivery->>'notes',''), 0)
+  insert into public.orders(number, idempotency_key, customer_name, customer_phone, customer_email, delivery_method, delivery_address, notes, total, payment_method)
+  values (v_order_number, p_idempotency_key, trim(customer->>'name'), trim(customer->>'phone'), v_email, delivery->>'method', coalesce(delivery->>'address',''), left(coalesce(delivery->>'notes',''), 500), 0, v_payment)
   returning id into v_order_id;
 
   for item in select * from jsonb_array_elements(p_payload->'items') loop
