@@ -47,17 +47,10 @@
                 <input id="f-name" name="name" type="text" autocomplete="name" aria-describedby="err-name" required>
                 <p class="field-error" id="err-name"></p>
               </div>
-              <div class="field-row">
-                <div class="field">
-                  <label for="f-phone">Teléfono</label>
-                  <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej: 358 123 4567" aria-describedby="err-phone" required>
-                  <p class="field-error" id="err-phone"></p>
-                </div>
-                <div class="field">
-                  <label for="f-email">Email</label>
-                  <input id="f-email" name="email" type="email" inputmode="email" autocomplete="email" aria-describedby="err-email" required>
-                  <p class="field-error" id="err-email"></p>
-                </div>
+              <div class="field">
+                <label for="f-phone">Teléfono (WhatsApp)</label>
+                <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej: 358 123 4567" aria-describedby="err-phone" required>
+                <p class="field-error" id="err-phone"></p>
               </div>
             </div>
 
@@ -66,7 +59,7 @@
               <div class="choices" id="delivery-options" role="radiogroup" aria-label="Método de entrega"></div>
               <div class="field" id="address-field" hidden style="margin-top:14px">
                 <label for="f-address">Dirección de entrega</label>
-                <input id="f-address" name="address" type="text" autocomplete="street-address" placeholder="Calle, número y barrio" aria-describedby="err-address">
+                <input id="f-address" name="address" type="text" autocomplete="street-address" placeholder="Calle, número y barrio (Río Cuarto)" aria-describedby="err-address">
                 <p class="field-error" id="err-address"></p>
               </div>
               <div class="field" style="margin:14px 0 0">
@@ -76,7 +69,8 @@
             </div>
 
             <div class="form-card">
-              <h2>Pago</h2>
+              <h2>Medio de pago</h2>
+              <div class="choices choices-pay" id="payment-options" role="radiogroup" aria-label="Medio de pago"></div>
               <p class="pay-note" id="payment-note"></p>
             </div>
             <p class="form-error" id="form-error" role="alert"></p>
@@ -86,6 +80,7 @@
             <h2>Tu pedido</h2>
             <div id="order-summary"></div>
             <button class="btn btn-red btn-lg btn-block" type="submit" form="checkout-form">Confirmar pedido</button>
+            <p class="fine wa-next">En el siguiente paso enviás el pedido por WhatsApp al local.</p>
             <p class="fine" style="margin:12px 0 0"><a href="carrito.html">Volver al carrito</a></p>
           </aside>
         </div>
