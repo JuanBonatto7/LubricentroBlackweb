@@ -404,7 +404,9 @@ body.has-bar .toast { bottom: 96px; }
 @media (prefers-reduced-motion: reduce) { .brand-tile { transition: none; } }
 
 /* Marca en la tarjeta de producto */
-.p-brand { color: var(--ink); font-weight: 700; }
+.p-brandline { display: flex; flex: 1; align-items: flex-start; gap: 8px; min-height: 28px; margin-bottom: 10px; }
+.p-brand-logo { width: auto; max-width: 56px; height: 28px; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: #fff; object-fit: contain; }
+.p-brand { align-self: center; color: var(--ink); font-size: .9rem; font-weight: 700; }
 
 /* Pedido por WhatsApp */
 .btn-wa { border-color: #1d8a4a; background: #1d8a4a; color: #fff; }

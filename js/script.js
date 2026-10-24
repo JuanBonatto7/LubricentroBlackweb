@@ -27,6 +27,14 @@
     return drawing + photo;
   }
 
+  /* Marca del producto: logo chico + nombre (reemplaza a la descripción en la tarjeta) */
+  function brandHTML(p) {
+    const name = Catalog.brandName(p.brand);
+    if (!name) return '';
+    const logo = Catalog.brandLogo(p.brand);
+    return `${logo ? `<img class="p-brand-logo" src="${esc(logo)}" alt="" loading="lazy" width="40" height="28">` : ''}<span class="p-brand">${esc(name)}</span>`;
+  }
+
   function productCard(p) {
     const s = stockInfo(p);
     const avail = Catalog.isAvailable(p);
@@ -34,9 +42,9 @@
     <article class="p-card${avail ? '' : ' is-out'}">
       <div class="p-media">${mediaHTML(p)}</div>
       <div class="p-body">
-        <p class="p-cat">${Catalog.brandName(p.brand) ? `<span class="p-brand">${esc(Catalog.brandName(p.brand))}</span> · ` : ''}${esc(Catalog.categoryName(p.category))}</p>
+        <p class="p-cat">${esc(Catalog.categoryName(p.category))}</p>
         <h3 class="p-name">${esc(p.name)}</h3>
-        <p class="p-desc">${esc(p.description)}</p>
+        <div class="p-brandline">${brandHTML(p)}</div>
         <div class="p-meta">
           <span class="p-price">${fmt(p.price)}</span>
           <span class="stock stock-${s.cls}">${s.text}</span>

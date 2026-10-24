@@ -37,3 +37,19 @@ insert into public.products (id,name,description,price,stock,category_id,feature
 ('desengrasante-motor','Desengrasante de motor','Remueve grasa y suciedad del vano motor.',7400,9,'desengrasantes',false,null,'{"shape":"spray","color":"#e8a317"}'),
 ('escobillas-limpiaparabrisas','Escobillas limpiaparabrisas (par)','Barrido silencioso y sin marcas.',9500,7,'accesorios',false,null,'{"shape":"box","color":"#2a323a"}')
 on conflict (id) do update set name = excluded.name, description = excluded.description, price = excluded.price, stock = excluded.stock, category_id = excluded.category_id, featured = excluded.featured, art = excluded.art;
+
+-- Marcas de los productos de ejemplo
+update public.products set brand_id = 'vonixx' where id = 'shampoo-neutro';
+update public.products set brand_id = 'toxic-shine' where id = 'cera-liquida';
+update public.products set brand_id = '3d' where id = 'cera-pasta';
+update public.products set brand_id = 'koch-chemie' where id = 'limpiador-interiores';
+update public.products set brand_id = 'supercar' where id = 'renovador-tablero';
+update public.products set brand_id = 'laffitte' where id = 'desengrasante-motor';
+update public.products set brand_id = 'tec' where id = 'limpia-llantas';
+update public.products set brand_id = 'speedway' where id = 'limpia-vidrios';
+update public.products set brand_id = 'full-car' where id = 'microfibra-x3';
+update public.products set brand_id = 'toxic-shine' where id = 'kit-lavado';
+update public.products set brand_id = '3d' where id = 'arcilla-descontaminante';
+update public.products set brand_id = 'full-car' where id = 'aromatizante';
+update public.products set brand_id = 'speedway' where id = 'escobillas-limpiaparabrisas';
+update public.products set brand_id = 'vonixx' where id = 'abrillantador-neumaticos';
