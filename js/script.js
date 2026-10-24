@@ -27,6 +27,14 @@
     return drawing + photo;
   }
 
+  /* Marca del producto: logo chico + nombre (reemplaza a la descripción en la tarjeta) */
+  function brandHTML(p) {
+    const name = Catalog.brandName(p.brand);
+    if (!name) return '';
+    const logo = Catalog.brandLogo(p.brand);
+    return `${logo ? `<img class="p-brand-logo" src="${esc(logo)}" alt="" loading="lazy" width="40" height="28">` : ''}<span class="p-brand">${esc(name)}</span>`;
+  }
+
   function productCard(p) {
     const s = stockInfo(p);
     const avail = Catalog.isAvailable(p);
@@ -36,7 +44,7 @@
       <div class="p-body">
         <p class="p-cat">${esc(Catalog.categoryName(p.category))}</p>
         <h3 class="p-name">${esc(p.name)}</h3>
-        <p class="p-desc">${esc(p.description)}</p>
+        <div class="p-brandline">${brandHTML(p)}</div>
         <div class="p-meta">
           <span class="p-price">${fmt(p.price)}</span>
           <span class="stock stock-${s.cls}">${s.text}</span>
@@ -89,6 +97,15 @@
       const list = Catalog.products().filter((p) => p.featured).sort((a, b) => Catalog.isAvailable(b) - Catalog.isAvailable(a)).slice(0, 8);
       feat.innerHTML = list.map(productCard).join('');
     }
+    const brandsBox = $('#home-brands');
+    const brandsList = Catalog.brands();
+    if (brandsBox && brandsList.length) {
+      brandsBox.innerHTML = brandsList.map((b) => `
+        <a class="brand-tile" href="productos.html?marca=${encodeURIComponent(b.id)}" aria-label="Ver productos ${esc(b.name)}">
+          ${b.logo ? `<img src="${esc(b.logo)}" alt="${esc(b.name)}" loading="lazy">` : `<span class="brand-tile-name">${esc(b.name)}</span>`}
+        </a>`).join('');
+      $('#brands-section').hidden = false;
+    }
   }
 
   /* ==========================================================
@@ -99,6 +116,7 @@
     const chips = $('#category-chips');
     const search = $('#catalog-search');
     const sort = $('#catalog-sort');
+    const brandSel = $('#catalog-brand');
     const count = $('#catalog-count');
     const title = $('#catalog-title');
     const base = document.title;
@@ -109,11 +127,20 @@
       cat: validCat(params.get('categoria')) ? params.get('categoria') : 'all',
       q: params.get('q') || '',
       sort: ['precio-asc', 'precio-desc', 'nombre'].includes(params.get('orden')) ? params.get('orden') : 'destacados',
+      brand: Catalog.brands().some((b) => b.id === params.get('marca')) ? params.get('marca') : 'all',
     };
     search.value = state.q;
     sort.value = state.sort;
 
     const all = Catalog.products();
+    /* Filtro por marca: solo aparece si hay marcas con productos */
+    const usedBrands = Catalog.brands().filter((b) => b.id === state.brand || all.some((p) => p.brand === b.id));
+    if (brandSel) {
+      brandSel.closest('.toolbar-brand').hidden = usedBrands.length === 0;
+      brandSel.innerHTML = '<option value="all">Todas las marcas</option>' + usedBrands.map((b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');
+      brandSel.value = state.brand;
+      brandSel.addEventListener('change', () => { state.brand = brandSel.value; render(); });
+    }
     const countBy = (id) => all.filter((p) => id === 'all' || p.category === id).length;
 
     function renderChips() {
@@ -124,7 +151,8 @@
     function filtered() {
       const q = norm(state.q).trim();
       let list = all.filter((p) => (state.cat === 'all' || p.category === state.cat)
-        && (!q || norm(`${p.name} ${p.description} ${Catalog.categoryName(p.category)}`).includes(q)));
+        && (state.brand === 'all' || p.brand === state.brand)
+        && (!q || norm(`${p.name} ${p.description} ${Catalog.categoryName(p.category)} ${Catalog.brandName(p.brand)}`).includes(q)));
       const byName = (a, b) => a.name.localeCompare(b.name, 'es');
       if (state.sort === 'precio-asc') list.sort((a, b) => a.price - b.price);
       else if (state.sort === 'precio-desc') list.sort((a, b) => b.price - a.price);
@@ -138,7 +166,10 @@
       renderChips();
       count.textContent = list.length === 1 ? '1 producto' : `${list.length} productos`;
       if (!list.length) {
-        grid.innerHTML = `<div class="empty"><p><strong>No encontramos productos con esa búsqueda.</strong></p><p>Probá con otra palabra o mirá todas las categorías.</p><button type="button" class="btn btn-line" data-clear>Ver todos los productos</button></div>`;
+        const onlyBrand = state.brand !== 'all' && state.cat === 'all' && !state.q.trim();
+        grid.innerHTML = onlyBrand
+          ? `<div class="empty"><p><strong>Todavía no cargamos productos de ${esc(Catalog.brandName(state.brand))} en la web.</strong></p><p>Consultanos por WhatsApp: seguro lo tenemos en el local.</p><a class="btn btn-wa" href="${waLink(`Hola BLACK, quiero consultar por productos ${Catalog.brandName(state.brand)}.`)}" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Consultar por WhatsApp</a> <button type="button" class="btn btn-line" data-clear>Ver todos los productos</button></div>`
+          : `<div class="empty"><p><strong>No encontramos productos con esa búsqueda.</strong></p><p>Probá con otra palabra o mirá todas las categorías.</p><button type="button" class="btn btn-line" data-clear>Ver todos los productos</button></div>`;
       } else {
         grid.innerHTML = list.map(productCard).join('');
       }
@@ -149,6 +180,7 @@
       if (state.cat !== 'all') p.set('categoria', state.cat);
       if (state.q.trim()) p.set('q', state.q.trim());
       if (state.sort !== 'destacados') p.set('orden', state.sort);
+      if (state.brand !== 'all') p.set('marca', state.brand);
       try { history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : '')); } catch (e) { /* algunos navegadores lo bloquean en file:// */ }
     }
 
@@ -165,7 +197,7 @@
     $('#catalog-search-form').addEventListener('submit', (e) => { e.preventDefault(); state.q = search.value; render(); });
     sort.addEventListener('change', () => { state.sort = sort.value; render(); });
     grid.addEventListener('click', (e) => {
-      if (e.target.closest('[data-clear]')) { state.cat = 'all'; state.q = ''; search.value = ''; render(); }
+      if (e.target.closest('[data-clear]')) { state.cat = 'all'; state.q = ''; state.brand = 'all'; search.value = ''; if (brandSel) brandSel.value = 'all'; render(); }
     });
 
     render();
@@ -182,6 +214,7 @@
           name: p.name,
           description: p.description,
           category: Catalog.categoryName(p.category),
+          ...(Catalog.brandName(p.brand) ? { brand: { '@type': 'Brand', name: Catalog.brandName(p.brand) } } : {}),
           offers: { '@type': 'Offer', priceCurrency: 'ARS', price: p.price, availability: Catalog.isAvailable(p) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' },
         },
       })),
@@ -309,9 +342,14 @@
         <input type="radio" name="delivery" value="${esc(d.id)}"${i === 0 ? ' checked' : ''}>
         <span class="choice-box"><strong>${esc(d.label)}</strong><small>${esc(d.note)}</small></span>
       </label>`).join('');
-    $('#payment-note').textContent = Payments.enabled()
-      ? 'Vas a pagar de forma segura con Mercado Pago al confirmar el pedido.'
-      : 'El pago se coordina con el local al confirmar tu pedido.';
+    const payMethods = (cfg.payments && cfg.payments.methods) || [];
+    $('#payment-options').innerHTML = payMethods.map((m, i) => `
+      <label class="choice">
+        <input type="radio" name="payment" value="${esc(m)}"${i === 0 ? ' checked' : ''}>
+        <span class="choice-box"><strong>${esc(m)}</strong></span>
+      </label>`).join('');
+    $('#payment-options').closest('.form-card').hidden = payMethods.length === 0;
+    $('#payment-note').textContent = 'El pago se hace en el local o como acuerden por WhatsApp. No se cobra nada en la web.';
 
     function renderSummary(noticeList = []) {
       const lines = Cart.lines();
@@ -335,7 +373,6 @@
     const fields = {
       name: { el: form.elements.name, check: (v) => v.trim().length >= 3 && v.trim().includes(' ') ? '' : 'Escribí tu nombre y apellido.' },
       phone: { el: form.elements.phone, check: (v) => { const d = v.replace(/\D/g, ''); return d.length >= 8 && d.length <= 15 ? '' : 'Ingresá un teléfono válido, con código de área.'; } },
-      email: { el: form.elements.email, check: (v) => (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? '' : 'Ingresá un email válido, por ejemplo nombre@correo.com.') },
       address: { el: form.elements.address, check: (v) => (!needsAddress() || v.trim().length >= 5 ? '' : 'Ingresá la dirección de entrega.') },
     };
     const setFieldError = (key, msg) => {
@@ -384,8 +421,9 @@
       let order;
       try {
         const data = {
-          name: form.elements.name.value.trim(), phone: form.elements.phone.value.trim(), email: form.elements.email.value.trim(),
+          name: form.elements.name.value.trim(), phone: form.elements.phone.value.trim(),
           delivery: selectedDelivery(), address: form.elements.address.value.trim(), notes: form.elements.notes.value.trim(),
+          payment: (form.querySelector('input[name="payment"]:checked') || {}).value || '',
         };
         order = await Orders.submit(Orders.buildPayload(data, Cart.lines()));
       } catch (err) {
@@ -413,45 +451,46 @@
       root.innerHTML = `<div class="empty empty-lg"><h2>No hay ningún pedido reciente</h2><p>Cuando confirmes un pedido, lo vas a ver acá.</p><a class="btn btn-red btn-lg" href="productos.html">Ver productos</a></div>`;
       return;
     }
-    const params = new URLSearchParams(location.search);
-    const mp = params.get('status') || params.get('collection_status');
-    let payNote = '';
-    if (params.get('pago') === 'error') payNote = 'Recibimos tu pedido, pero no pudimos iniciar el pago online. El local se va a comunicar con vos para coordinarlo.';
-    else if (mp === 'rejected') payNote = 'El pago fue rechazado. Tu pedido sigue registrado: contactanos para resolverlo.';
-    else if (mp === 'pending' || mp === 'in_process') payNote = 'Tu pago está en proceso. Te avisaremos cuando se acredite.';
-
+    const waHref = waLink(Orders.whatsappText(order));
     const when = new Date(order.createdAt).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' });
+    const envio = order.delivery && order.delivery.method === 'envio';
     root.innerHTML = `
       <div class="done-head">
         <span class="done-icon"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span>
         <div>
-          <h1 tabindex="-1" id="done-title">¡Recibimos tu pedido!</h1>
-          <p>Pedido <strong>${esc(order.number)}</strong> · ${esc(when)}</p>
+          <h1 tabindex="-1" id="done-title">¡Pedido ${esc(order.number)} listo!</h1>
+          <p>${esc(when)}</p>
         </div>
       </div>
-      ${order.demo && cfg.demoMode ? `<div class="notice notice-warn" role="note"><p><strong>Modo demostración.</strong> Este pedido se guardó solo en este dispositivo: BLACK todavía no lo recibe.</p></div>` : ''}
-      ${payNote ? `<div class="notice" role="status"><p>${esc(payNote)}</p></div>` : ''}
+      ${order.demo && cfg.demoMode ? `<div class="notice notice-warn" role="note"><p><strong>Modo demostración.</strong> Este pedido se guardó solo en este dispositivo.</p></div>` : ''}
+      <section class="wa-step" aria-labelledby="wa-step-title">
+        <h2 id="wa-step-title">Último paso: envialo por WhatsApp</h2>
+        <p>Tu pedido <strong>todavía no le llegó al local</strong>. Tocá el botón, se abre WhatsApp con el pedido ya escrito y solo tenés que enviarlo. Ahí coordinamos ${envio ? 'el envío, ' : ''}el pago y ${envio ? 'la entrega' : 'el retiro'}.</p>
+        <a class="btn btn-wa btn-lg" href="${waHref}" target="_blank" rel="noopener" id="wa-send"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Enviar pedido por WhatsApp</a>
+      </section>
       <div class="done-grid">
         <section class="card" aria-labelledby="t-order">
           <h2 id="t-order">Tu pedido</h2>
           <ul class="order-lines">
-            ${order.items.map((i) => `<li><span class="ol-name">${esc(i.name)}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(i.subtotal)}</span></li>`).join('')}
+            ${order.items.map((i) => `<li><span class="ol-name">${esc(i.name)}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(Number(i.subtotal))}</span></li>`).join('')}
           </ul>
-          <p class="order-total"><span>Total</span><strong>${fmt(order.total)}</strong></p>
+          <p class="order-total"><span>Total</span><strong>${fmt(Number(order.total))}</strong></p>
+          ${envio ? '<p class="fine">El costo del envío se suma después, por WhatsApp.</p>' : ''}
         </section>
         <section class="card" aria-labelledby="t-data">
           <h2 id="t-data">Detalles</h2>
           <dl class="facts">
-            <div><dt>Estado del pedido</dt><dd>${esc(ORDER_STATUS[order.status] || order.status)}</dd></div>
-            <div><dt>Estado del pago</dt><dd>${esc(PAYMENT_STATUS[order.payment && order.payment.status] || 'Pendiente')}</dd></div>
+            <div><dt>Nombre</dt><dd>${esc(order.customer.name)}</dd></div>
+            <div><dt>Teléfono</dt><dd>${esc(order.customer.phone)}</dd></div>
             <div><dt>Entrega</dt><dd>${esc(order.delivery.label)}${order.delivery.address ? `<br>${esc(order.delivery.address)}` : ''}</dd></div>
-            <div><dt>Cliente</dt><dd>${esc(order.customer.name)}<br>${esc(order.customer.phone)}<br>${esc(order.customer.email)}</dd></div>
+            <div><dt>Medio de pago</dt><dd>${esc(order.paymentMethod || 'A coordinar')}</dd></div>
             ${order.delivery.notes ? `<div><dt>Observaciones</dt><dd>${esc(order.delivery.notes)}</dd></div>` : ''}
           </dl>
-          <p class="fine">${Payments.enabled() ? '' : 'El pago se coordina con el local. '}¿Dudas sobre tu pedido? <a href="${waLink(`Hola BLACK, consulto por mi pedido ${order.number}.`)}" target="_blank" rel="noopener">Escribinos por WhatsApp</a>.</p>
         </section>
       </div>
-      <div class="actions-row"><a class="btn btn-red btn-lg" href="productos.html">Seguir comprando</a></div>`;
+      <div class="actions-row"><a class="btn btn-line btn-lg" href="productos.html">Seguir viendo productos</a></div>`;
+    const h = $('#done-title');
+    if (h) h.focus({ preventScroll: true });
   }
 
   /* ==========================================================

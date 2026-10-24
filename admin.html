@@ -15,6 +15,7 @@
   <script src="js/config.js" defer></script>
   <script src="js/products-data.js" defer></script>
   <script src="js/store.js" defer></script>
+  <script src="js/layout.js" defer></script>
   <script src="js/admin.js" defer></script>
 </head>
 <body data-page="admin" class="admin">
@@ -53,6 +54,7 @@
       <div class="adm-tabs" role="tablist" aria-label="Secciones">
         <button class="adm-tab is-active" role="tab" id="tab-productos" aria-selected="true" aria-controls="panel-productos" type="button">Productos</button>
         <button class="adm-tab" role="tab" id="tab-pedidos" aria-selected="false" aria-controls="panel-pedidos" type="button">Pedidos <span class="adm-count" id="orders-badge" hidden>0</span></button>
+        <button class="adm-tab" role="tab" id="tab-catalogo" aria-selected="false" aria-controls="panel-catalogo" type="button">Categorías y marcas</button>
       </div>
 
       <section id="panel-productos" role="tabpanel" aria-labelledby="tab-productos">
@@ -76,6 +78,28 @@
         </div>
         <p class="result-count" id="order-count" aria-live="polite"></p>
         <div id="order-list"></div>
+      </section>
+
+      <section id="panel-catalogo" role="tabpanel" aria-labelledby="tab-catalogo" hidden>
+        <p class="form-error" id="cat-panel-error" role="alert"></p>
+        <div class="adm-two">
+          <div class="adm-box">
+            <div class="adm-box-head">
+              <h2>Categorías</h2>
+              <button class="btn btn-red" type="button" id="new-category">+ Nueva categoría</button>
+            </div>
+            <p class="fine">Aparecen como filtros en la tienda, en este orden. Una categoría con productos no se puede eliminar: primero cambiales la categoría.</p>
+            <div class="adm-list" id="cat-list"></div>
+          </div>
+          <div class="adm-box">
+            <div class="adm-box-head">
+              <h2>Marcas</h2>
+              <button class="btn btn-red" type="button" id="new-brand">+ Nueva marca</button>
+            </div>
+            <p class="fine">Se eligen al cargar un producto y sirven de filtro en la tienda.</p>
+            <div class="adm-list" id="brand-list"></div>
+          </div>
+        </div>
       </section>
 
     </main>
@@ -107,9 +131,15 @@
           <p class="field-error" id="p-err-stock"></p>
         </div>
       </div>
-      <div class="field">
-        <label for="p-cat">Categoría</label>
-        <select class="select" id="p-cat" name="category"></select>
+      <div class="field-row">
+        <div class="field">
+          <label for="p-cat">Categoría</label>
+          <select class="select" id="p-cat" name="category"></select>
+        </div>
+        <div class="field">
+          <label for="p-brand">Marca</label>
+          <select class="select" id="p-brand" name="brand"></select>
+        </div>
       </div>
 
       <div class="field">
@@ -134,6 +164,41 @@
       <div class="adm-dialog-actions">
         <button class="btn btn-line" type="button" id="p-cancel">Cancelar</button>
         <button class="btn btn-red" type="submit">Guardar producto</button>
+      </div>
+    </form>
+  </dialog>
+  <!-- Formulario de categoría / marca -->
+  <dialog class="adm-dialog adm-dialog-sm" id="mini-dialog" aria-labelledby="mini-title">
+    <form id="mini-form" novalidate>
+      <h2 id="mini-title">Nueva categoría</h2>
+      <div class="field">
+        <label for="m-name">Nombre</label>
+        <input id="m-name" name="name" type="text" maxlength="80" required aria-describedby="m-err-name">
+        <p class="field-error" id="m-err-name"></p>
+      </div>
+      <div class="field" id="m-icon-field">
+        <span class="label" id="m-icon-label">Ícono</span>
+        <div class="icon-pick" id="m-icons" role="radiogroup" aria-labelledby="m-icon-label"></div>
+      </div>
+      <div class="field" id="m-logo-field">
+        <span class="label">Logo <span class="opt">(opcional)</span></span>
+        <div class="adm-img">
+          <div class="brand-tile brand-tile-sm" id="m-logo-preview"></div>
+          <div>
+            <label class="btn btn-line adm-file">Elegir logo<input id="m-logo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+            <button class="link-btn" type="button" id="m-logo-remove" hidden>Quitar logo</button>
+            <p class="fine" id="m-logo-msg">PNG o JPG. Mejor con fondo blanco o transparente.</p>
+          </div>
+        </div>
+      </div>
+      <div class="field" id="m-order-field">
+        <label for="m-order">Orden en la tienda <span class="opt">(1 = primera)</span></label>
+        <input id="m-order" name="order" type="number" min="0" step="1" inputmode="numeric">
+      </div>
+      <p class="form-error" id="m-form-error" role="alert"></p>
+      <div class="adm-dialog-actions">
+        <button class="btn btn-line" type="button" id="m-cancel">Cancelar</button>
+        <button class="btn btn-red" type="submit">Guardar</button>
       </div>
     </form>
   </dialog>

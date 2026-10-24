@@ -13,15 +13,20 @@
   let sb = null;
   let products = [];
   let categories = [];
+  let brands = [];
   let orders = [];
+  let brandsReady = true;   // false si la tabla de marcas todavía no existe en Supabase
 
   const catName = (id) => (categories.find((c) => c.id === id) || {}).name || '—';
+  const brandName = (id) => (brands.find((b) => b.id === id) || {}).name || '';
+  const ICONS = [['spark', 'Brillo'], ['car', 'Auto'], ['seat', 'Asiento'], ['shield', 'Protección'], ['bag', 'Bolsa'], ['drop', 'Gota'], ['filter', 'Filtro'], ['wrench', 'Llave'], ['bubbles', 'Espuma'], ['spray', 'Rociador'], ['cloth', 'Paño'], ['bottle', 'Botella'], ['dots', 'Otros']];
 
   /* ---------- Mapeos base de datos ⇄ pantalla ---------- */
   const mapOrder = (r) => ({
     number: r.number,
     createdAt: r.created_at,
-    customer: { name: r.customer_name, phone: r.customer_phone, email: r.customer_email },
+    customer: { name: r.customer_name, phone: r.customer_phone, email: r.customer_email || '' },
+    paymentMethod: r.payment_method || '',
     delivery: {
       method: r.delivery_method,
       label: r.delivery_method === 'envio' ? 'Envío a domicilio' : 'Retiro en el local',
@@ -40,6 +45,12 @@
     if (error) throw error;
     categories = data;
     catSelect.innerHTML = categories.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+  }
+  async function loadBrands() {
+    const { data, error } = await sb.from('brands').select('*').order('name');
+    brandsReady = !error;
+    brands = error ? [] : data;
+    brandSelect.innerHTML = '<option value="">Sin marca</option>' + brands.map((b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');
   }
   async function loadProducts() {
     const { data, error } = await sb.from('products').select('*').order('created_at', { ascending: false }).order('name');
@@ -74,7 +85,7 @@
       return;
     }
     try {
-      await Promise.all([loadCategories(), loadProducts(), loadOrders()]);
+      await Promise.all([loadCategories(), loadBrands(), loadProducts(), loadOrders()]);
     } catch (e) {
       loginErr.textContent = 'No se pudieron cargar los datos. Revisá la conexión e intentá de nuevo.';
       showApp(false);
@@ -112,7 +123,7 @@
   });
 
   /* ---------- Pestañas ---------- */
-  const tabs = { productos: $('#tab-productos'), pedidos: $('#tab-pedidos') };
+  const tabs = { productos: $('#tab-productos'), pedidos: $('#tab-pedidos'), catalogo: $('#tab-catalogo') };
   async function selectTab(name) {
     Object.entries(tabs).forEach(([k, el]) => {
       const on = k === name;
@@ -122,6 +133,7 @@
     });
     try {
       if (name === 'pedidos') { await loadOrders(); renderOrders(); }
+      else if (name === 'catalogo') { await Promise.all([loadCategories(), loadBrands(), loadProducts()]); renderCatalogAdmin(); }
       else { await loadProducts(); renderProducts(); }
     } catch (e) { /* se queda con lo que ya está en pantalla */ }
   }
@@ -149,7 +161,7 @@
 
   function renderProducts() {
     const q = norm(search.value).trim();
-    const rows = products.filter((p) => !q || norm(`${p.name} ${catName(p.category)}`).includes(q));
+    const rows = products.filter((p) => !q || norm(`${p.name} ${catName(p.category)} ${brandName(p.brand)}`).includes(q));
     $('#prod-count').textContent = rows.length === 1 ? '1 producto' : `${rows.length} productos`;
     if (!rows.length) { list.innerHTML = '<div class="empty"><p>No hay productos que coincidan.</p></div>'; return; }
     list.innerHTML = rows.map((p) => `
@@ -157,7 +169,7 @@
         ${thumb(p)}
         <div class="adm-main-info">
           <p class="adm-name">${esc(p.name)}</p>
-          <p class="adm-sub">${esc(catName(p.category))}</p>
+          <p class="adm-sub">${esc(catName(p.category))}${brandName(p.brand) ? ` · ${esc(brandName(p.brand))}` : ''}</p>
         </div>
         <p class="adm-num"><span class="adm-lbl">Precio</span>${fmt(p.price)}</p>
         <p class="adm-num"><span class="adm-lbl">Stock</span>${p.stock}</p>
@@ -189,6 +201,7 @@
   const dlg = $('#prod-dialog');
   const form = $('#prod-form');
   const catSelect = $('#p-cat');
+  const brandSelect = $('#p-brand');
   let editing = null;
   let imageData = '';   // URL existente, o data: URL si se eligió una foto nueva
 
@@ -207,6 +220,8 @@
     form.elements.price.value = p ? p.price : '';
     form.elements.stock.value = p ? p.stock : '';
     form.elements.category.value = p ? p.category : (categories[0] || {}).id;
+    form.elements.brand.value = p && brands.some((b) => b.id === p.brand) ? p.brand : '';
+    brandSelect.disabled = !brandsReady;
     form.elements.featured.checked = !!(p && p.featured);
     form.elements.soldOut.checked = !!(p && p.soldOut);
     form.elements.active.checked = p ? p.active !== false : true;
@@ -324,6 +339,7 @@
         featured: form.elements.featured.checked,
         active: form.elements.active.checked,
         image_url: imageUrl || null,
+        ...(brandsReady ? { brand_id: form.elements.brand.value || null } : {}),
         art: (editing && editing.art) || { shape: 'bottle', color: '#e11d2e' },
       };
       const { error } = await sb.from('products').upsert(row);
@@ -337,6 +353,198 @@
     } finally {
       saving = false; submitBtn.disabled = false;
     }
+  });
+
+  /* ==========================================================
+     CATEGORÍAS Y MARCAS
+     ========================================================== */
+  const catList = $('#cat-list');
+  const brandList = $('#brand-list');
+  const catPanelErr = $('#cat-panel-error');
+  const countBy = (key, id) => products.filter((p) => p[key] === id).length;
+  const plural = (n) => (n === 1 ? '1 producto' : `${n} productos`);
+
+  function renderCatalogAdmin() {
+    catPanelErr.textContent = brandsReady ? '' : 'Falta crear la tabla de marcas en Supabase (migración del 22/10). Las categorías funcionan igual.';
+    $('#new-brand').disabled = !brandsReady;
+    catList.innerHTML = categories.length ? categories.map((c) => `
+      <article class="adm-mini">
+        <svg class="ico ico-lg" aria-hidden="true"><use href="#i-${esc(c.icon || 'dots')}"/></svg>
+        <div class="adm-main-info"><p class="adm-name">${esc(c.name)}</p><p class="adm-sub">${plural(countBy('category', c.id))} · orden ${Number(c.sort_order) || 0}</p></div>
+        <div class="adm-row-actions">
+          <button class="btn btn-line" type="button" data-cat-edit="${esc(c.id)}">Editar</button>
+          <button class="btn btn-line adm-del" type="button" data-cat-del="${esc(c.id)}" aria-label="Eliminar categoría ${esc(c.name)}">Eliminar</button>
+        </div>
+      </article>`).join('') : '<div class="empty"><p>Todavía no hay categorías.</p></div>';
+    brandList.innerHTML = brands.length ? brands.map((b) => `
+      <article class="adm-mini">
+        <div class="brand-tile brand-tile-sm">${b.logo_url ? `<img src="${esc(b.logo_url)}" alt="">` : `<span class="brand-tile-name">${esc(b.name.slice(0, 2))}</span>`}</div>
+        <div class="adm-main-info"><p class="adm-name">${esc(b.name)}</p><p class="adm-sub">${plural(countBy('brand', b.id))}</p></div>
+        <div class="adm-row-actions">
+          <button class="btn btn-line" type="button" data-brand-edit="${esc(b.id)}">Editar</button>
+          <button class="btn btn-line adm-del" type="button" data-brand-del="${esc(b.id)}" aria-label="Eliminar marca ${esc(b.name)}">Eliminar</button>
+        </div>
+      </article>`).join('') : `<div class="empty"><p>${brandsReady ? 'Todavía no hay marcas. Creá la primera con “+ Nueva marca”.' : 'Las marcas van a estar disponibles cuando se actualice la base.'}</p></div>`;
+  }
+
+  /* --- Formulario chico (categoría o marca) --- */
+  const mini = $('#mini-dialog');
+  const miniForm = $('#mini-form');
+  let miniKind = 'category';
+  let miniEditing = null;
+  let miniIcon = 'dots';
+  let miniLogo = '';   // URL actual, o data: URL si se eligió un logo nuevo
+
+  function showLogo() {
+    $('#m-logo-preview').innerHTML = miniLogo ? `<img src="${esc(miniLogo)}" alt="Vista previa del logo">` : '<span class="fine">Sin logo</span>';
+    $('#m-logo-remove').hidden = !miniLogo;
+  }
+  /* Logo: se reduce a 400 px y se guarda en PNG (mantiene la transparencia) */
+  function logoToDataURL(file, max = 400) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = reject;
+      r.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const k = Math.min(1, max / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/png'));
+        };
+        img.src = r.result;
+      };
+      r.readAsDataURL(file);
+    });
+  }
+  $('#m-logo').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try { miniLogo = await logoToDataURL(f); $('#m-logo-msg').textContent = 'Logo listo. Se sube al guardar.'; showLogo(); }
+    catch (err) { $('#m-logo-msg').textContent = 'No pudimos leer esa imagen. Probá con otra (PNG o JPG).'; }
+  });
+  $('#m-logo-remove').addEventListener('click', () => { miniLogo = ''; $('#m-logo').value = ''; showLogo(); });
+  async function uploadLogo(id) {
+    const blob = await (await fetch(miniLogo)).blob();
+    const path = `brands/${id}-${Date.now()}.png`;
+    const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: 'image/png', cacheControl: '31536000' });
+    if (error) throw error;
+    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  function renderIcons() {
+    $('#m-icons').innerHTML = ICONS.map(([id, label]) => `
+      <button type="button" class="icon-opt${id === miniIcon ? ' is-on' : ''}" role="radio" aria-checked="${id === miniIcon}" data-icon="${id}" title="${label}" aria-label="${label}">
+        <svg class="ico" aria-hidden="true"><use href="#i-${id}"/></svg>
+      </button>`).join('');
+  }
+  $('#m-icons').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-icon]');
+    if (b) { miniIcon = b.dataset.icon; renderIcons(); $(`[data-icon="${miniIcon}"]`).focus(); }
+  });
+
+  function openMini(kind, item) {
+    miniKind = kind; miniEditing = item || null;
+    const isCat = kind === 'category';
+    $('#mini-title').textContent = `${item ? 'Editar' : 'Nueva'} ${isCat ? 'categoría' : 'marca'}`;
+    $('#m-icon-field').hidden = !isCat;
+    $('#m-order-field').hidden = !isCat;
+    $('#m-logo-field').hidden = isCat;
+    miniLogo = (!isCat && item && item.logo_url) || '';
+    $('#m-logo').value = '';
+    $('#m-logo-msg').textContent = 'PNG o JPG. Mejor con fondo blanco o transparente.';
+    if (!isCat) showLogo();
+    miniForm.elements.name.value = item ? item.name : '';
+    miniIcon = (item && item.icon) || 'dots';
+    miniForm.elements.order.value = isCat ? (item ? Number(item.sort_order) || 0 : categories.reduce((m, c) => Math.max(m, Number(c.sort_order) || 0), 0) + 1) : '';
+    $('#m-err-name').textContent = ''; $('#m-form-error').textContent = '';
+    miniForm.elements.name.removeAttribute('aria-invalid');
+    if (isCat) renderIcons();
+    if (mini.showModal) mini.showModal(); else mini.setAttribute('open', '');
+    miniForm.elements.name.focus();
+  }
+  const closeMini = () => { if (mini.close) mini.close(); else mini.removeAttribute('open'); };
+  $('#m-cancel').addEventListener('click', closeMini);
+  $('#new-category').addEventListener('click', () => openMini('category'));
+  $('#new-brand').addEventListener('click', () => openMini('brand'));
+
+  const uniqueSlug = (name, list) => {
+    const base = slug(name);
+    let id = base; let n = 2;
+    while (list.some((x) => x.id === id)) id = `${base}-${n++}`;
+    return id;
+  };
+
+  let miniSaving = false;
+  miniForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (miniSaving) return;
+    const isCat = miniKind === 'category';
+    const list = isCat ? categories : brands;
+    const name = miniForm.elements.name.value.trim().replace(/\s+/g, ' ');
+    let err = '';
+    if (name.length < 2) err = 'Escribí un nombre de al menos 2 letras.';
+    else if (list.some((x) => norm(x.name) === norm(name) && (!miniEditing || x.id !== miniEditing.id))) err = `Ya existe una ${isCat ? 'categoría' : 'marca'} con ese nombre.`;
+    $('#m-err-name').textContent = err;
+    if (err) { miniForm.elements.name.setAttribute('aria-invalid', 'true'); miniForm.elements.name.focus(); return; }
+    miniForm.elements.name.removeAttribute('aria-invalid');
+
+    const btn = miniForm.querySelector('button[type="submit"]');
+    miniSaving = true; btn.disabled = true; $('#m-form-error').textContent = '';
+    try {
+      const table = isCat ? 'categories' : 'brands';
+      const id = miniEditing ? miniEditing.id : uniqueSlug(name, list);
+      const row = isCat
+        ? { name, icon: miniIcon, sort_order: Math.max(0, parseInt(miniForm.elements.order.value, 10) || 0) }
+        : { name };
+      if (!isCat) {
+        const before = (miniEditing && miniEditing.logo_url) || '';
+        if (miniLogo.startsWith('data:')) row.logo_url = await uploadLogo(id);
+        else if (miniLogo !== before) row.logo_url = miniLogo || null;
+      }
+      const { error } = miniEditing
+        ? await sb.from(table).update(row).eq('id', id)
+        : await sb.from(table).insert(Object.assign({ id }, row));
+      if (error) throw error;
+      closeMini();
+      if (isCat) await loadCategories(); else await loadBrands();
+      renderCatalogAdmin();
+    } catch (err2) {
+      $('#m-form-error').textContent = 'No se pudo guardar. Revisá la conexión e intentá de nuevo.';
+    } finally {
+      miniSaving = false; btn.disabled = false;
+    }
+  });
+
+  catList.addEventListener('click', async (e) => {
+    const ed = e.target.closest('[data-cat-edit]');
+    const del = e.target.closest('[data-cat-del]');
+    if (ed) openMini('category', categories.find((c) => c.id === ed.dataset.catEdit));
+    if (!del) return;
+    const c = categories.find((x) => x.id === del.dataset.catDel);
+    if (!c) return;
+    const n = countBy('category', c.id);
+    if (n) { window.alert(`"${c.name}" tiene ${plural(n)}. Primero cambiales la categoría (en la pestaña Productos) y después la podés eliminar.`); return; }
+    if (!window.confirm(`¿Eliminar la categoría "${c.name}"?`)) return;
+    const { error } = await sb.from('categories').delete().eq('id', c.id);
+    if (error) { window.alert('No se pudo eliminar. Si tiene productos, cambiales la categoría primero.'); return; }
+    await loadCategories(); renderCatalogAdmin();
+  });
+
+  brandList.addEventListener('click', async (e) => {
+    const ed = e.target.closest('[data-brand-edit]');
+    const del = e.target.closest('[data-brand-del]');
+    if (ed) openMini('brand', brands.find((b) => b.id === ed.dataset.brandEdit));
+    if (!del) return;
+    const b = brands.find((x) => x.id === del.dataset.brandDel);
+    if (!b) return;
+    const n = countBy('brand', b.id);
+    if (!window.confirm(`¿Eliminar la marca "${b.name}"?${n ? ` Los ${plural(n)} de esta marca van a quedar sin marca.` : ''}`)) return;
+    const { error } = await sb.from('brands').delete().eq('id', b.id);
+    if (error) { window.alert('No se pudo eliminar la marca. Intentá de nuevo.'); return; }
+    await Promise.all([loadBrands(), loadProducts()]); renderCatalogAdmin();
   });
 
   /* ==========================================================
@@ -384,7 +592,8 @@
             <ul class="order-lines">${o.items.map((i) => `<li><span class="ol-name">${esc(i.name)}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(i.subtotal)}</span></li>`).join('')}</ul>
             <p class="order-total"><span>Total</span><strong>${fmt(o.total)}</strong></p>
             <dl class="facts">
-              <div><dt>Cliente</dt><dd>${esc(o.customer.name)} · ${esc(o.customer.phone)}<br>${esc(o.customer.email)}</dd></div>
+              <div><dt>Cliente</dt><dd>${esc(o.customer.name)} · ${esc(o.customer.phone)}${o.customer.email ? `<br>${esc(o.customer.email)}` : ''}</dd></div>
+              <div><dt>Medio de pago elegido</dt><dd>${esc(o.paymentMethod || 'A coordinar')}</dd></div>
               <div><dt>Entrega</dt><dd>${esc(o.delivery.label)}${o.delivery.address ? `<br>${esc(o.delivery.address)}` : ''}</dd></div>
               ${o.delivery.notes ? `<div><dt>Observaciones</dt><dd>${esc(o.delivery.notes)}</dd></div>` : ''}
             </dl>

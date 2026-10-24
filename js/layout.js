@@ -22,6 +22,10 @@
   <symbol id="i-bag" viewBox="0 0 24 24"><path ${stroke} d="M5 8h14l-1 12H6zM9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
   <symbol id="i-filter" viewBox="0 0 24 24"><rect x="7" y="4" width="10" height="16" rx="2" ${stroke}/><path ${stroke} d="M7 9h10M7 13h10M7 17h10"/></symbol>
   <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="18" cy="12" r="1.8" fill="currentColor"/></symbol>
+  <symbol id="i-bubbles" viewBox="0 0 24 24"><circle cx="8.5" cy="15" r="5" ${stroke}/><circle cx="16" cy="8" r="3.5" ${stroke}/><circle cx="18" cy="16.5" r="2.2" ${stroke}/><path ${stroke} d="M6 13.5a2.5 2.5 0 0 1 2-1.5"/></symbol>
+  <symbol id="i-spray" viewBox="0 0 24 24"><path ${stroke} d="M7.5 10h6.5v10a1 1 0 0 1-1 1H8.5a1 1 0 0 1-1-1zM8.5 10V7h4l3 1.5h-3M10.5 7V4.5h-2"/><path ${stroke} d="M18.5 6h2M18 9l2 1M18 3l2-1"/></symbol>
+  <symbol id="i-cloth" viewBox="0 0 24 24"><path ${stroke} d="M3.5 7.5h14a3 3 0 0 1 3 3v6.5h-14a3 3 0 0 1-3-3z"/><path ${stroke} d="M3.5 7.5v6.5M8 11.5h8M8 14.5h5"/></symbol>
+  <symbol id="i-bottle" viewBox="0 0 24 24"><path ${stroke} d="M10 3h4v3.5l2 2.5v11a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9l2-2.5z"/><path ${stroke} d="M8 12.5h8M8 16.5h8"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" ${stroke}/><path ${stroke} d="M16 16l5 5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path ${stroke} d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-minus" viewBox="0 0 24 24"><path ${stroke} d="M5 12h14"/></symbol>
@@ -135,7 +139,7 @@
 
   /* ---------- Botón flotante de WhatsApp ----------
      No se muestra en carrito y checkout, donde la barra inferior ya ocupa ese lugar. */
-  if (b.whatsapp && !['carrito', 'checkout'].includes(page)) {
+  if (b.whatsapp && !['carrito', 'checkout', 'admin'].includes(page)) {
     document.body.insertAdjacentHTML('beforeend', `
     <a class="wa-float" href="${window.BLACK.waLink('Hola BLACK, quiero hacer una consulta.')}" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp">
       <svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg><span class="wa-float-label">WhatsApp</span>
