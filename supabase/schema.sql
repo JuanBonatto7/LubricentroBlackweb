@@ -1,6 +1,6 @@
 -- ==========================================================
 -- BLACK – estructura de la base de datos (Supabase)
--- Refleja el proyecto en producción al 22/10/2026 (incluye marcas y pedido por WhatsApp).
+-- Refleja el proyecto en producción al 24/10/2026 (marcas con logo y pedido por WhatsApp).
 -- Se puede ejecutar varias veces: no borra datos.
 -- Orden en un proyecto nuevo: schema.sql → seed.sql → admin-user.sql
 -- ==========================================================
@@ -160,8 +160,10 @@ create policy order_items_admin_all on public.order_items
 create table if not exists public.brands (
   id text primary key check (id ~ '^[a-z0-9-]+$'),
   name text not null check (char_length(name) between 1 and 80),
+  logo_url text,
   created_at timestamptz not null default now()
 );
+alter table public.brands add column if not exists logo_url text;
 create unique index if not exists brands_name_unique on public.brands (lower(name));
 alter table public.brands enable row level security;
 

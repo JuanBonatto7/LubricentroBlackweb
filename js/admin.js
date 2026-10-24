@@ -19,7 +19,7 @@
 
   const catName = (id) => (categories.find((c) => c.id === id) || {}).name || '—';
   const brandName = (id) => (brands.find((b) => b.id === id) || {}).name || '';
-  const ICONS = [['spark', 'Brillo'], ['car', 'Auto'], ['seat', 'Asiento'], ['shield', 'Protección'], ['bag', 'Bolsa'], ['drop', 'Gota'], ['filter', 'Filtro'], ['wrench', 'Llave'], ['dots', 'Otros']];
+  const ICONS = [['spark', 'Brillo'], ['car', 'Auto'], ['seat', 'Asiento'], ['shield', 'Protección'], ['bag', 'Bolsa'], ['drop', 'Gota'], ['filter', 'Filtro'], ['wrench', 'Llave'], ['bubbles', 'Espuma'], ['spray', 'Rociador'], ['cloth', 'Paño'], ['bottle', 'Botella'], ['dots', 'Otros']];
 
   /* ---------- Mapeos base de datos ⇄ pantalla ---------- */
   const mapOrder = (r) => ({
@@ -378,6 +378,7 @@
       </article>`).join('') : '<div class="empty"><p>Todavía no hay categorías.</p></div>';
     brandList.innerHTML = brands.length ? brands.map((b) => `
       <article class="adm-mini">
+        <div class="brand-tile brand-tile-sm">${b.logo_url ? `<img src="${esc(b.logo_url)}" alt="">` : `<span class="brand-tile-name">${esc(b.name.slice(0, 2))}</span>`}</div>
         <div class="adm-main-info"><p class="adm-name">${esc(b.name)}</p><p class="adm-sub">${plural(countBy('brand', b.id))}</p></div>
         <div class="adm-row-actions">
           <button class="btn btn-line" type="button" data-brand-edit="${esc(b.id)}">Editar</button>
@@ -392,6 +393,46 @@
   let miniKind = 'category';
   let miniEditing = null;
   let miniIcon = 'dots';
+  let miniLogo = '';   // URL actual, o data: URL si se eligió un logo nuevo
+
+  function showLogo() {
+    $('#m-logo-preview').innerHTML = miniLogo ? `<img src="${esc(miniLogo)}" alt="Vista previa del logo">` : '<span class="fine">Sin logo</span>';
+    $('#m-logo-remove').hidden = !miniLogo;
+  }
+  /* Logo: se reduce a 400 px y se guarda en PNG (mantiene la transparencia) */
+  function logoToDataURL(file, max = 400) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = reject;
+      r.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const k = Math.min(1, max / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/png'));
+        };
+        img.src = r.result;
+      };
+      r.readAsDataURL(file);
+    });
+  }
+  $('#m-logo').addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    try { miniLogo = await logoToDataURL(f); $('#m-logo-msg').textContent = 'Logo listo. Se sube al guardar.'; showLogo(); }
+    catch (err) { $('#m-logo-msg').textContent = 'No pudimos leer esa imagen. Probá con otra (PNG o JPG).'; }
+  });
+  $('#m-logo-remove').addEventListener('click', () => { miniLogo = ''; $('#m-logo').value = ''; showLogo(); });
+  async function uploadLogo(id) {
+    const blob = await (await fetch(miniLogo)).blob();
+    const path = `brands/${id}-${Date.now()}.png`;
+    const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: 'image/png', cacheControl: '31536000' });
+    if (error) throw error;
+    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
 
   function renderIcons() {
     $('#m-icons').innerHTML = ICONS.map(([id, label]) => `
@@ -410,6 +451,11 @@
     $('#mini-title').textContent = `${item ? 'Editar' : 'Nueva'} ${isCat ? 'categoría' : 'marca'}`;
     $('#m-icon-field').hidden = !isCat;
     $('#m-order-field').hidden = !isCat;
+    $('#m-logo-field').hidden = isCat;
+    miniLogo = (!isCat && item && item.logo_url) || '';
+    $('#m-logo').value = '';
+    $('#m-logo-msg').textContent = 'PNG o JPG. Mejor con fondo blanco o transparente.';
+    if (!isCat) showLogo();
     miniForm.elements.name.value = item ? item.name : '';
     miniIcon = (item && item.icon) || 'dots';
     miniForm.elements.order.value = isCat ? (item ? Number(item.sort_order) || 0 : categories.reduce((m, c) => Math.max(m, Number(c.sort_order) || 0), 0) + 1) : '';
@@ -449,12 +495,18 @@
     miniSaving = true; btn.disabled = true; $('#m-form-error').textContent = '';
     try {
       const table = isCat ? 'categories' : 'brands';
+      const id = miniEditing ? miniEditing.id : uniqueSlug(name, list);
       const row = isCat
         ? { name, icon: miniIcon, sort_order: Math.max(0, parseInt(miniForm.elements.order.value, 10) || 0) }
         : { name };
+      if (!isCat) {
+        const before = (miniEditing && miniEditing.logo_url) || '';
+        if (miniLogo.startsWith('data:')) row.logo_url = await uploadLogo(id);
+        else if (miniLogo !== before) row.logo_url = miniLogo || null;
+      }
       const { error } = miniEditing
-        ? await sb.from(table).update(row).eq('id', miniEditing.id)
-        : await sb.from(table).insert(Object.assign({ id: uniqueSlug(name, list) }, row));
+        ? await sb.from(table).update(row).eq('id', id)
+        : await sb.from(table).insert(Object.assign({ id }, row));
       if (error) throw error;
       closeMini();
       if (isCat) await loadCategories(); else await loadBrands();

@@ -89,6 +89,15 @@
       const list = Catalog.products().filter((p) => p.featured).sort((a, b) => Catalog.isAvailable(b) - Catalog.isAvailable(a)).slice(0, 8);
       feat.innerHTML = list.map(productCard).join('');
     }
+    const brandsBox = $('#home-brands');
+    const brandsList = Catalog.brands();
+    if (brandsBox && brandsList.length) {
+      brandsBox.innerHTML = brandsList.map((b) => `
+        <a class="brand-tile" href="productos.html?marca=${encodeURIComponent(b.id)}" aria-label="Ver productos ${esc(b.name)}">
+          ${b.logo ? `<img src="${esc(b.logo)}" alt="${esc(b.name)}" loading="lazy">` : `<span class="brand-tile-name">${esc(b.name)}</span>`}
+        </a>`).join('');
+      $('#brands-section').hidden = false;
+    }
   }
 
   /* ==========================================================
@@ -117,7 +126,7 @@
 
     const all = Catalog.products();
     /* Filtro por marca: solo aparece si hay marcas con productos */
-    const usedBrands = Catalog.brands().filter((b) => all.some((p) => p.brand === b.id));
+    const usedBrands = Catalog.brands().filter((b) => b.id === state.brand || all.some((p) => p.brand === b.id));
     if (brandSel) {
       brandSel.closest('.toolbar-brand').hidden = usedBrands.length === 0;
       brandSel.innerHTML = '<option value="all">Todas las marcas</option>' + usedBrands.map((b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');
@@ -149,7 +158,10 @@
       renderChips();
       count.textContent = list.length === 1 ? '1 producto' : `${list.length} productos`;
       if (!list.length) {
-        grid.innerHTML = `<div class="empty"><p><strong>No encontramos productos con esa búsqueda.</strong></p><p>Probá con otra palabra o mirá todas las categorías.</p><button type="button" class="btn btn-line" data-clear>Ver todos los productos</button></div>`;
+        const onlyBrand = state.brand !== 'all' && state.cat === 'all' && !state.q.trim();
+        grid.innerHTML = onlyBrand
+          ? `<div class="empty"><p><strong>Todavía no cargamos productos de ${esc(Catalog.brandName(state.brand))} en la web.</strong></p><p>Consultanos por WhatsApp: seguro lo tenemos en el local.</p><a class="btn btn-wa" href="${waLink(`Hola BLACK, quiero consultar por productos ${Catalog.brandName(state.brand)}.`)}" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Consultar por WhatsApp</a> <button type="button" class="btn btn-line" data-clear>Ver todos los productos</button></div>`
+          : `<div class="empty"><p><strong>No encontramos productos con esa búsqueda.</strong></p><p>Probá con otra palabra o mirá todas las categorías.</p><button type="button" class="btn btn-line" data-clear>Ver todos los productos</button></div>`;
       } else {
         grid.innerHTML = list.map(productCard).join('');
       }

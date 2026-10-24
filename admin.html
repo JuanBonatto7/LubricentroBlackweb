@@ -180,6 +180,17 @@
         <span class="label" id="m-icon-label">Ícono</span>
         <div class="icon-pick" id="m-icons" role="radiogroup" aria-labelledby="m-icon-label"></div>
       </div>
+      <div class="field" id="m-logo-field">
+        <span class="label">Logo <span class="opt">(opcional)</span></span>
+        <div class="adm-img">
+          <div class="brand-tile brand-tile-sm" id="m-logo-preview"></div>
+          <div>
+            <label class="btn btn-line adm-file">Elegir logo<input id="m-logo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+            <button class="link-btn" type="button" id="m-logo-remove" hidden>Quitar logo</button>
+            <p class="fine" id="m-logo-msg">PNG o JPG. Mejor con fondo blanco o transparente.</p>
+          </div>
+        </div>
+      </div>
       <div class="field" id="m-order-field">
         <label for="m-order">Orden en la tienda <span class="opt">(1 = primera)</span></label>
         <input id="m-order" name="order" type="number" min="0" step="1" inputmode="numeric">

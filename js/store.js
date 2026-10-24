@@ -108,8 +108,8 @@
           window.BLACK_CATEGORIES = c.data.map((x) => ({ id: x.id, name: x.name, icon: x.icon }));
           window.BLACK_PRODUCTS = p.data.map(rowToProduct);
           /* Las marcas se leen aparte: si fallan, el catálogo se muestra igual, sin marcas */
-          const b = await sb.from('brands').select('id, name').order('name');
-          window.BLACK_BRANDS = b.error ? [] : b.data;
+          const b = await sb.from('brands').select('*').order('name');
+          window.BLACK_BRANDS = b.error ? [] : b.data.map((x) => ({ id: x.id, name: x.name, logo: x.logo_url || '' }));
         } catch (e) {
           console.warn('No se pudo leer el catálogo de Supabase; se usa el catálogo local.', e);
         }
@@ -134,6 +134,7 @@
     categoryName(id) { const c = this.categories().find((x) => x.id === id); return c ? c.name : ''; },
     brands() { return window.BLACK_BRANDS || []; },
     brandName(id) { const b = this.brands().find((x) => x.id === id); return b ? b.name : ''; },
+    brandLogo(id) { const b = this.brands().find((x) => x.id === id); return b ? b.logo || '' : ''; },
     isAvailable(p) { return !p.soldOut && p.stock > 0; },
   };
 
