@@ -249,6 +249,13 @@
         });
         storage.set(KEYS.orders, storage.get(KEYS.orders, []).concat(order));
       }
+      /* Se guarda la marca de cada producto para mostrarla en la confirmación y en WhatsApp */
+      if (Array.isArray(order.items)) {
+        order.items = order.items.map((i) => {
+          const p = Catalog.get(i.productId);
+          return Object.assign({}, i, { brand: i.brand || (p ? Catalog.brandName(p.brand) : '') });
+        });
+      }
       storage.set(KEYS.last, order);
       Cart.clear();
       return order;
@@ -261,7 +268,7 @@
       L.push(`Hola ${cfg.business.shortName || cfg.business.name}! Quiero confirmar este pedido:`);
       L.push('');
       L.push(`*Pedido ${o.number}*`);
-      (o.items || []).forEach((i) => L.push(`- ${i.quantity} x ${i.name}: ${fmt(Number(i.subtotal))}`));
+      (o.items || []).forEach((i) => L.push(`- ${i.quantity} x ${i.name}${i.brand ? ` (${i.brand})` : ''}: ${fmt(Number(i.subtotal))}`));
       const envio = o.delivery && o.delivery.method === 'envio';
       L.push(`*Total: ${fmt(Number(o.total))}*${envio ? ' + envío (a coordinar)' : ''}`);
       L.push('');

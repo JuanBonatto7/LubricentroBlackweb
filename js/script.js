@@ -472,7 +472,7 @@
         <section class="card" aria-labelledby="t-order">
           <h2 id="t-order">Tu pedido</h2>
           <ul class="order-lines">
-            ${order.items.map((i) => `<li><span class="ol-name">${esc(i.name)}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(Number(i.subtotal))}</span></li>`).join('')}
+            ${order.items.map((i) => `<li><span class="ol-name">${esc(i.name)}${i.brand ? ` <small class="ol-brand">${esc(i.brand)}</small>` : ''}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(Number(i.subtotal))}</span></li>`).join('')}
           </ul>
           <p class="order-total"><span>Total</span><strong>${fmt(Number(order.total))}</strong></p>
           ${envio ? '<p class="fine">El costo del envío se suma después, por WhatsApp.</p>' : ''}
