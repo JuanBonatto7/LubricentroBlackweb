@@ -371,7 +371,9 @@ body.has-bar .toast { bottom: 96px; }
 .hero-sub { max-width: 520px; color: #fff; font-size: clamp(1.45rem, 5.2vw, 2.3rem); line-height: 1.02; }
 .hero-sub::before { content: ""; display: block; width: 64px; height: 5px; margin: 10px 0 12px; background: var(--red); }
 .hero-logo-wrap { position: relative; display: grid; order: -1; place-items: center; }
-.hero-logo { width: 132px; height: 132px; border-radius: 50%; background: #fff; object-fit: contain; box-shadow: 0 0 0 5px var(--red), 0 18px 40px rgba(0,0,0,.6); }
+.hero-logo { display: grid; width: 132px; height: 132px; place-items: center; overflow: hidden; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px var(--red), 0 18px 40px rgba(0,0,0,.6); }
+
+.hero-logo-img { display: block; width: 80%; height: 80%; object-fit: contain; }
 
 /* Encabezado oscuro de Lubricentro (mismo estilo que el inicio) */
 .page-head-dark { position: relative; overflow: hidden; border-bottom: 0; background: var(--black); color: #fff; }
