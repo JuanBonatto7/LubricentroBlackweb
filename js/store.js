@@ -100,10 +100,12 @@
       if (SB_ON) {
         try {
           const sb = await getSB();
-          const [c, p] = await Promise.all([
+          /* Si la base no contesta en 15 s (por ejemplo, proyecto pausado), se muestra el aviso */
+          const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
+          const [c, p] = await Promise.race([Promise.all([
             sb.from('categories').select('*').order('sort_order'),
             sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).order('name'),
-          ]);
+          ]), timeout]);
           if (c.error || p.error) throw (c.error || p.error);
           window.BLACK_CATEGORIES = c.data.map((x) => ({ id: x.id, name: x.name, icon: x.icon }));
           window.BLACK_PRODUCTS = p.data.map(rowToProduct);
@@ -111,7 +113,13 @@
           const b = await sb.from('brands').select('*').order('name');
           window.BLACK_BRANDS = b.error ? [] : b.data.map((x) => ({ id: x.id, name: x.name, logo: x.logo_url || '' }));
         } catch (e) {
-          console.warn('No se pudo leer el catálogo de Supabase; se usa el catálogo local.', e);
+          /* Nunca se muestran los productos de ejemplo de products-data.js en lugar de los reales:
+             se vacía el catálogo y cada página muestra un aviso (ver script.js) */
+          console.warn('No se pudo leer el catálogo de Supabase.', e);
+          window.BLACK_CATEGORIES = [];
+          window.BLACK_PRODUCTS = [];
+          window.BLACK_BRANDS = [];
+          this.failed = true;
         }
         return;
       }
@@ -184,6 +192,7 @@
     remove(id) { this._write(this._read().filter((i) => i.id !== id)); },
     clear() { this._write([]); },
     reconcile() {
+      if (Catalog.failed) return [];   // sin catálogo no se toca el carrito
       const notes = [];
       const out = [];
       this._read().forEach((i) => {

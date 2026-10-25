@@ -514,7 +514,37 @@
   }
 
   /* ---------- Arranque ---------- */
+  /* Aviso cuando no se pudo leer el catálogo (base pausada o sin conexión) */
+  function catalogErrorHTML() {
+    return `<div class="empty empty-lg catalog-error" role="alert">
+      <h2>No pudimos cargar los productos</h2>
+      <p>Puede ser un problema momentáneo. Probá recargar en unos minutos o consultanos por WhatsApp.</p>
+      <div class="actions-row" style="justify-content:center">
+        <button type="button" class="btn btn-red" data-reload>Recargar</button>
+        <a class="btn btn-wa" href="${waLink('Hola BLACK, quiero hacer una consulta.')}" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Consultar por WhatsApp</a>
+      </div>
+    </div>`;
+  }
+  function showCatalogError() {
+    const hide = (sel) => { const el = $(sel); if (el) el.hidden = true; };
+    if (page === 'home') {
+      const cats = $('#home-categories'); if (cats) cats.closest('section').hidden = true;
+      const feat = $('#home-featured'); if (feat) { feat.innerHTML = catalogErrorHTML(); const link = feat.closest('section').querySelector('.section-head .text-link'); if (link) link.hidden = true; }
+    } else if (page === 'productos') {
+      ['#catalog-search-form', '#category-chips', '#catalog-count', '.page-head-row .btn-share'].forEach(hide);
+      $('#catalog-grid').innerHTML = catalogErrorHTML();
+    } else if (page === 'carrito') {
+      hide('#sticky-bar');
+      $('#cart-root').innerHTML = catalogErrorHTML();
+    } else if (page === 'checkout') {
+      hide('#checkout-wrap'); hide('#sticky-bar');
+      const box = $('#checkout-empty'); box.hidden = false; box.outerHTML = catalogErrorHTML();
+    }
+  }
+  document.addEventListener('click', (e) => { if (e.target.closest('[data-reload]')) location.reload(); });
+
   Catalog.load().then(() => {
+    if (Catalog.failed && ['home', 'productos', 'carrito', 'checkout'].includes(page)) { showCatalogError(); return; }
     if (page === 'home') initHome();
     else if (page === 'productos') initCatalog();
     else if (page === 'carrito') initCart();

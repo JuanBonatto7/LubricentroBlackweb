@@ -422,6 +422,17 @@ body.has-bar .toast { bottom: 96px; }
 .choices-pay { grid-template-columns: 1fr; }
 @media (min-width: 600px) { .wa-step .btn { width: auto; } .choices-pay { grid-template-columns: 1fr 1fr; } }
 
+/* Categorías en celular: ícono arriba y nombre abajo, sin cortar palabras */
+@media (max-width: 599px) {
+  .cat-tile { flex-direction: column; justify-content: center; gap: 6px; padding: 12px 6px; text-align: center; font-size: .95rem; }
+  .cat-tile span { overflow-wrap: normal; hyphens: manual; }
+  .adm-header-inner { flex-wrap: wrap; gap: 8px; padding: 10px 0; }
+  .adm-title { font-size: 1.15rem; }
+  .adm-actions { width: 100%; }
+  .adm-actions .btn { flex: 1; min-height: 40px; padding: 0 8px; font-size: .85rem; }
+}
+.btn-wa .ico, .empty-lg .btn-wa .ico { color: inherit; }
+
 /* Compartir catálogo */
 .page-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
 .btn-share { min-height: 46px; padding: 0 18px; font-size: .98rem; box-shadow: 0 6px 16px rgba(225,29,46,.3); }
