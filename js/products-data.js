@@ -6,7 +6,8 @@
 
    CATEGORÍAS: agregar, quitar o renombrar libremente. `id` es el que usan
    los productos y la URL (productos.html?categoria=<id>). `icon` es uno de:
-   spark, car, seat, shield, bag, drop, filter, wrench, bubbles, spray, cloth, bottle, dots
+   spark, car, seat, shield, bag, drop, filter, wrench, bubbles, spray, cloth, bottle,
+   battery, oilcan, additive, oilfilter, tree, dots
    (también se pueden editar desde el panel: Categorías y marcas).
 
    PRODUCTOS:
@@ -31,10 +32,12 @@ window.BLACK_CATEGORIES = [
   { id: 'acondicionadores', name: 'Acondicionadores', icon: 'bottle' },
   { id: 'desengrasantes', name: 'Desengrasantes', icon: 'spray' },
   { id: 'microfibras', name: 'Microfibras', icon: 'cloth' },
+  { id: 'aromatizantes', name: 'Aromatizantes', icon: 'tree' },
   { id: 'accesorios', name: 'Accesorios', icon: 'bag' },
-  { id: 'lubricantes', name: 'Lubricantes', icon: 'drop' },
-  { id: 'filtros', name: 'Filtros', icon: 'filter' },
-  { id: 'refrigerantes-aditivos', name: 'Refrigerantes y aditivos', icon: 'wrench' },
+  { id: 'lubricantes', name: 'Lubricantes', icon: 'oilcan' },
+  { id: 'aditivos', name: 'Aditivos', icon: 'additive' },
+  { id: 'filtros', name: 'Filtros', icon: 'oilfilter' },
+  { id: 'baterias', name: 'Baterías', icon: 'battery' },
 ];
 
 window.BLACK_BRANDS = [
@@ -65,7 +68,7 @@ window.BLACK_PRODUCTS = [
   { id: 'arcilla-descontaminante', name: 'Arcilla descontaminante', description: 'Quita impurezas adheridas a la pintura.', price: 15800, stock: 4, category: 'accesorios', brand: '3d', image: '', art: { shape: 'tin', color: '#1fa6b8' } },
 
   { id: 'microfibra-x3', name: 'Paños de microfibra x3', description: 'Suaves, absorbentes y sin pelusa.', price: 4200, stock: 40, category: 'microfibras', featured: true, brand: 'full-car', image: '', art: { shape: 'cloth', color: '#e11d2e' } },
-  { id: 'aromatizante', name: 'Aromatizante', description: 'Fragancia duradera para tu auto.', price: 3900, stock: 30, category: 'accesorios', brand: 'full-car', image: '', art: { shape: 'spray', color: '#1fa6b8' } },
+  { id: 'aromatizante', name: 'Aromatizante', description: 'Fragancia duradera para tu auto.', price: 3900, stock: 30, category: 'aromatizantes', brand: 'full-car', image: '', art: { shape: 'spray', color: '#1fa6b8' } },
 
   { id: 'aceite-5w30', name: 'Aceite 5W-30 sintético 4 L', description: 'Protección y rendimiento para el motor.', price: 38500, stock: 8, category: 'lubricantes', featured: true, image: '', art: { shape: 'jug', color: '#e11d2e' } },
   { id: 'aceite-10w40', name: 'Aceite 10W-40 semisintético 4 L', description: 'Uso diario, motores nafteros y diésel.', price: 32000, stock: 6, category: 'lubricantes', image: '', art: { shape: 'jug', color: '#e8a317' } },
@@ -74,8 +77,8 @@ window.BLACK_PRODUCTS = [
   { id: 'filtro-aceite', name: 'Filtro de aceite', description: 'Retiene impurezas y cuida el motor.', price: 5200, stock: 20, category: 'filtros', featured: true, image: '', art: { shape: 'filter', color: '#e11d2e' } },
   { id: 'filtro-aire', name: 'Filtro de aire', description: 'Mejor respiración y menor consumo.', price: 6800, stock: 11, category: 'filtros', image: '', art: { shape: 'filter', color: '#e8a317' } },
 
-  { id: 'refrigerante', name: 'Refrigerante 1 L', description: 'Protege el motor del sobrecalentamiento.', price: 9800, stock: 13, category: 'refrigerantes-aditivos', image: '', art: { shape: 'jug', color: '#1fa6b8' } },
-  { id: 'aditivo-combustible', name: 'Aditivo para combustible', description: 'Limpia inyectores y mejora el rendimiento.', price: 4900, stock: 17, category: 'refrigerantes-aditivos', image: '', art: { shape: 'bottle', color: '#2f6fd1' } },
+  { id: 'refrigerante', name: 'Refrigerante 1 L', description: 'Protege el motor del sobrecalentamiento.', price: 9800, stock: 13, category: 'aditivos', image: '', art: { shape: 'jug', color: '#1fa6b8' } },
+  { id: 'aditivo-combustible', name: 'Aditivo para combustible', description: 'Limpia inyectores y mejora el rendimiento.', price: 4900, stock: 17, category: 'aditivos', image: '', art: { shape: 'bottle', color: '#2f6fd1' } },
   { id: 'desengrasante-motor', name: 'Desengrasante de motor', description: 'Remueve grasa y suciedad del vano motor.', price: 7400, stock: 9, category: 'desengrasantes', brand: 'laffitte', image: '', art: { shape: 'spray', color: '#e8a317' } },
 
   { id: 'escobillas-limpiaparabrisas', name: 'Escobillas limpiaparabrisas (par)', description: 'Barrido silencioso y sin marcas.', price: 9500, stock: 7, category: 'accesorios', brand: 'speedway', image: '', art: { shape: 'box', color: '#2a323a' } },
