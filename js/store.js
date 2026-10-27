@@ -83,7 +83,7 @@
      Celular: abre el menú de compartir del teléfono. Si no existe, copia el link.
      Devuelve 'shared', 'cancelled', 'copied' o 'manual'. */
   async function shareCatalog() {
-    const url = new URL('productos.html', location.href).href;
+    const url = new URL('/productos', location.href).href;
     const title = `Catálogo de ${cfg.business.name}`;
     const text = `Mirá los productos de ${cfg.business.name}:`;
     if (navigator.share) {

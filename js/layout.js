@@ -54,23 +54,23 @@
 
   /* ---------- Header ---------- */
   const nav = [
-    ['index.html', 'Inicio', 'home'],
-    ['productos.html', 'Productos', 'productos'],
-    ['lubricentro.html', 'Lubricentro', 'lubricentro'],
-    ['contacto.html', 'Contacto', 'contacto'],
+    ['/', 'Inicio', 'home'],
+    ['/productos', 'Productos', 'productos'],
+    ['/lubricentro', 'Lubricentro', 'lubricentro'],
+    ['/contacto', 'Contacto', 'contacto'],
   ];
   const header = document.getElementById('site-header');
   if (header) {
     header.innerHTML = `
     <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="${esc(b.name)}, inicio">
+      <a class="brand" href="/" aria-label="${esc(b.name)}, inicio">
         <img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="64" height="64">
       </a>
       <nav class="site-nav" id="site-nav" aria-label="Principal">
         ${nav.map(([href, label, id]) => `<a href="${href}"${id === page ? ' aria-current="page"' : ''}>${label}</a>`).join('')}
       </nav>
       <div class="header-actions">
-        <a class="cart-link${page === 'carrito' ? ' is-current' : ''}" href="carrito.html" id="cart-link" aria-label="Carrito">
+        <a class="cart-link${page === 'carrito' ? ' is-current' : ''}" href="/carrito" id="cart-link" aria-label="Carrito">
           <svg class="ico" aria-hidden="true"><use href="#i-cart"/></svg>
           <span class="cart-label">Carrito</span>
           <span class="cart-count" data-cart-count hidden>0</span>
@@ -112,15 +112,15 @@
     footer.innerHTML = `
     <div class="container footer-grid">
       <div class="footer-brand">
-        <a class="brand" href="index.html" aria-label="${esc(b.name)}, inicio"><img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="88" height="88" loading="lazy"></a>
+        <a class="brand" href="/" aria-label="${esc(b.name)}, inicio"><img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="88" height="88" loading="lazy"></a>
         <p>Lubricentro y cosmética vehicular en Río Cuarto: service, lubricantes y productos de detailing.</p>
       </div>
       <div>
         <h2>Tienda</h2>
         <ul class="footer-links">
-          <li><a href="productos.html">Productos</a></li>
-          <li><a href="carrito.html">Carrito</a></li>
-          <li><a href="lubricentro.html">Servicios de lubricentro</a></li>
+          <li><a href="/productos">Productos</a></li>
+          <li><a href="/carrito">Carrito</a></li>
+          <li><a href="/lubricentro">Servicios de lubricentro</a></li>
         </ul>
       </div>
       <div>
