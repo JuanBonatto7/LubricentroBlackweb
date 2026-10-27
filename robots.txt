@@ -5,5 +5,5 @@ Disallow: /checkout.html
 Disallow: /pedido.html
 Disallow: /admin.html
 
-# Reemplazar TU-DOMINIO por el dominio real:
-Sitemap: https://TU-DOMINIO/sitemap.xml
+# Sitemap
+Sitemap: https://blacklubricentro.com.ar/sitemap.xml
