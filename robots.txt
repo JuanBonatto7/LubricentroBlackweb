@@ -1,9 +1,9 @@
 User-agent: *
 Allow: /
-Disallow: /carrito.html
-Disallow: /checkout.html
-Disallow: /pedido.html
-Disallow: /admin.html
+Disallow: /carrito
+Disallow: /checkout
+Disallow: /pedido
+Disallow: /admin
 
 # Sitemap
 Sitemap: https://blacklubricentro.com.ar/sitemap.xml

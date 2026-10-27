@@ -76,7 +76,7 @@
     if (!btn) return;
     const p = Catalog.get(btn.dataset.add);
     const r = Cart.add(btn.dataset.add);
-    if (r.ok) B.toast(`${p.name} agregado al carrito.`, { href: 'carrito.html', label: 'Ver carrito' });
+    if (r.ok) B.toast(`${p.name} agregado al carrito.`, { href: '/carrito', label: 'Ver carrito' });
     else B.toast(r.reason === 'max' ? 'Ya tenés en el carrito todo el stock disponible.' : 'Este producto está sin stock.');
   });
 
@@ -87,7 +87,7 @@
     const cats = $('#home-categories');
     if (cats) {
       cats.innerHTML = Catalog.categories().map((c) => `
-        <a class="cat-tile" href="productos.html?categoria=${encodeURIComponent(c.id)}">
+        <a class="cat-tile" href="/productos?categoria=${encodeURIComponent(c.id)}">
           <svg class="ico ico-lg" aria-hidden="true"><use href="#i-${esc(c.icon)}"/></svg>
           <span>${esc(c.name)}</span>
         </a>`).join('');
@@ -101,7 +101,7 @@
     const brandsList = Catalog.brands();
     if (brandsBox && brandsList.length) {
       brandsBox.innerHTML = brandsList.map((b) => `
-        <a class="brand-tile" href="productos.html?marca=${encodeURIComponent(b.id)}" aria-label="Ver productos ${esc(b.name)}">
+        <a class="brand-tile" href="/productos?marca=${encodeURIComponent(b.id)}" aria-label="Ver productos ${esc(b.name)}">
           ${b.logo ? `<img src="${esc(b.logo)}" alt="${esc(b.name)}" loading="lazy">` : `<span class="brand-tile-name">${esc(b.name)}</span>`}
         </a>`).join('');
       $('#brands-section').hidden = false;
@@ -240,7 +240,7 @@
 
       if (!lines.length) {
         bar.hidden = true;
-        root.innerHTML = `${noteHTML}<div class="empty empty-lg"><svg class="ico ico-xl" aria-hidden="true"><use href="#i-cart"/></svg><h2>Tu carrito está vacío</h2><p>Sumá productos del catálogo y armá tu pedido.</p><a class="btn btn-red btn-lg" href="productos.html">Ver productos</a></div>`;
+        root.innerHTML = `${noteHTML}<div class="empty empty-lg"><svg class="ico ico-xl" aria-hidden="true"><use href="#i-cart"/></svg><h2>Tu carrito está vacío</h2><p>Sumá productos del catálogo y armá tu pedido.</p><a class="btn btn-red btn-lg" href="/productos">Ver productos</a></div>`;
         return;
       }
       const total = Cart.total();
@@ -280,13 +280,13 @@
             <div class="total"><dt>TOTAL</dt><dd>${fmt(total)}</dd></div>
           </dl>
           <p class="fine">El costo de envío, si elegís envío a domicilio, se coordina con el local.</p>
-          <a class="btn btn-red btn-lg btn-block summary-cta" href="checkout.html">Continuar con el pedido</a>
-          <a class="btn btn-line btn-block" href="productos.html">Seguir comprando</a>
+          <a class="btn btn-red btn-lg btn-block summary-cta" href="/checkout">Continuar con el pedido</a>
+          <a class="btn btn-line btn-block" href="/productos">Seguir comprando</a>
         </aside>
       </div>`;
 
       bar.hidden = false;
-      bar.innerHTML = `<div><span class="bar-label">Total</span><strong>${fmt(total)}</strong></div><a class="btn btn-red btn-lg" href="checkout.html">Continuar con el pedido</a>`;
+      bar.innerHTML = `<div><span class="bar-label">Total</span><strong>${fmt(total)}</strong></div><a class="btn btn-red btn-lg" href="/checkout">Continuar con el pedido</a>`;
 
       if (focusAfter) {
         const el = root.querySelector(`[data-qty="${focusAfter.id}"][data-act="${focusAfter.act}"]:not([disabled])`) || root.querySelector(`[data-qty="${focusAfter.id}"]:not([disabled])`);
@@ -411,7 +411,7 @@
       /* El stock pudo cambiar mientras el cliente completaba sus datos */
       const changes = Cart.reconcile();
       if (changes.length) {
-        if (!Cart.lines().length) { location.href = 'carrito.html'; return; }
+        if (!Cart.lines().length) { location.href = '/carrito'; return; }
         renderSummary(changes);
         formError.textContent = 'Algunos productos cambiaron de stock. Revisá tu pedido y confirmalo de nuevo.';
         return;
@@ -434,9 +434,9 @@
       try {
         const pay = await Payments.begin(order);
         if (pay.redirected) return;
-        location.href = 'pedido.html';
+        location.href = '/pedido';
       } catch (err) {
-        location.href = 'pedido.html?pago=error';
+        location.href = '/pedido?pago=error';
       }
     });
   }
@@ -448,7 +448,7 @@
     const root = $('#order-root');
     const order = Orders.last();
     if (!order) {
-      root.innerHTML = `<div class="empty empty-lg"><h2>No hay ningún pedido reciente</h2><p>Cuando confirmes un pedido, lo vas a ver acá.</p><a class="btn btn-red btn-lg" href="productos.html">Ver productos</a></div>`;
+      root.innerHTML = `<div class="empty empty-lg"><h2>No hay ningún pedido reciente</h2><p>Cuando confirmes un pedido, lo vas a ver acá.</p><a class="btn btn-red btn-lg" href="/productos">Ver productos</a></div>`;
       return;
     }
     const waHref = waLink(Orders.whatsappText(order));
@@ -488,7 +488,7 @@
           </dl>
         </section>
       </div>
-      <div class="actions-row"><a class="btn btn-line btn-lg" href="productos.html">Seguir viendo productos</a></div>`;
+      <div class="actions-row"><a class="btn btn-line btn-lg" href="/productos">Seguir viendo productos</a></div>`;
     const h = $('#done-title');
     if (h) h.focus({ preventScroll: true });
   }
