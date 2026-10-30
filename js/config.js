@@ -6,9 +6,8 @@ window.BLACK_CONFIG = {
   business: {
     name: 'BLACK Lubricentro y Cosmética Vehicular',
     shortName: 'BLACK',
-    // ⚠️ NÚMERO DE PRUEBA (Juan). Antes de publicar, cambiar phone y whatsapp por el del local.
-    phone: '+54 9 358 654-8564',
-    whatsapp: '5493586548564',          // a este número llegan los pedidos. Formato: 549 + característica + número, sin + ni espacios
+    phone: '+54 9 358 411-1473',
+    whatsapp: '5493584111473',          // a este número llegan los pedidos. Formato: 549 + característica + número, sin + ni espacios
     instagram: 'blackcardetail78',
     address: 'Av. Marcelo T. de Alvear 1961',
     city: 'Río Cuarto, Córdoba',
