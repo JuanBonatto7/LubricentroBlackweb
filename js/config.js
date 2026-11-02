@@ -14,7 +14,6 @@ window.BLACK_CONFIG = {
     hours: [
       ['Lunes a viernes', '8:00 – 12:30 y 16:00 – 20:00'],
       ['Sábados', '9:00 – 13:00'],
-      ['Domingos', 'Cerrado'],
     ],
   },
 
