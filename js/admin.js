@@ -589,6 +589,8 @@
   const filter = $('#order-filter');
   filter.innerHTML = '<option value="all">Todos los estados</option>' + Object.entries(ORDER_STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
   filter.addEventListener('change', renderOrders);
+  const search = $('#order-search');
+  search.addEventListener('input', renderOrders);
 
   const statusClass = (s) => ({ pendiente_pago: 'b-amber', pago_rechazado: 'b-red', cancelado: 'b-red', entregado: 'b-green', pago_aprobado: 'b-green' }[s] || 'b-dark');
   const opts = (map, current) => Object.entries(map).map(([k, v]) => `<option value="${k}"${k === current ? ' selected' : ''}>${v}</option>`).join('');
@@ -603,7 +605,9 @@
     const all = orders;
     updateBadge();
 
-    const rows = filter.value === 'all' ? all : all.filter((o) => o.status === filter.value);
+    const q = search.value.trim().toLowerCase().replace(/\s+/g, '');
+    const byStatus = filter.value === 'all' ? all : all.filter((o) => o.status === filter.value);
+    const rows = q ? byStatus.filter((o) => [o.number, o.customer.name, o.customer.phone].some((v) => String(v || '').toLowerCase().replace(/\s+/g, '').includes(q))) : byStatus;
     $('#order-count').textContent = rows.length === 1 ? '1 pedido' : `${rows.length} pedidos`;
 
     if (!all.length) {
