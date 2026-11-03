@@ -16,7 +16,7 @@
   /* ---------- Tarjeta de producto ---------- */
   function stockInfo(p) {
     if (!Catalog.isAvailable(p)) return { cls: 'out', text: 'Sin stock' };
-    if (p.stock <= 5) return { cls: 'low', text: p.stock === 1 ? 'Última unidad' : `Últimas ${p.stock} unidades` };
+    if (p.stock <= 2) return { cls: 'low', text: p.stock === 1 ? 'Última unidad' : `Últimas ${p.stock} unidades` };
     return { cls: 'ok', text: 'Disponible' };
   }
 
@@ -35,15 +35,17 @@
     return `${logo ? `<img class="p-brand-logo" src="${esc(logo)}" alt="" loading="lazy" width="40" height="28">` : ''}<span class="p-brand">${esc(name)}</span>`;
   }
 
+  const productURL = (p) => `producto.html?id=${encodeURIComponent(p.id)}`;
+
   function productCard(p) {
     const s = stockInfo(p);
     const avail = Catalog.isAvailable(p);
     return `
     <article class="p-card${avail ? '' : ' is-out'}">
-      <div class="p-media">${mediaHTML(p)}</div>
+      <a class="p-media" href="${productURL(p)}" tabindex="-1" aria-hidden="true">${mediaHTML(p)}</a>
       <div class="p-body">
         <p class="p-cat">${esc(Catalog.categoryName(p.category))}</p>
-        <h3 class="p-name">${esc(p.name)}</h3>
+        <h3 class="p-name"><a href="${productURL(p)}">${esc(p.name)}</a></h3>
         <div class="p-brandline">${brandHTML(p)}</div>
         <div class="p-meta">
           <span class="p-price">${fmt(p.price)}</span>
@@ -100,10 +102,22 @@
     const brandsBox = $('#home-brands');
     const brandsList = Catalog.brands();
     if (brandsBox && brandsList.length) {
-      brandsBox.innerHTML = brandsList.map((b) => `
+      const tile = (b) => `
         <a class="brand-tile" href="productos.html?marca=${encodeURIComponent(b.id)}" aria-label="Ver productos ${esc(b.name)}">
           ${b.logo ? `<img src="${esc(b.logo)}" alt="${esc(b.name)}" loading="lazy">` : `<span class="brand-tile-name">${esc(b.name)}</span>`}
-        </a>`).join('');
+        </a>`;
+      /* Con marcas de más de un rubro, se muestran agrupadas (Detailing, Lubricantes, Filtros) */
+      const groups = Catalog.groupBrands(brandsList);
+      if (groups.length > 1) {
+        brandsBox.classList.remove('brand-grid');
+        brandsBox.innerHTML = groups.map((g) => `
+          <div class="brand-group">
+            <h3 class="brand-group-title">${esc(g.name)}</h3>
+            <div class="brand-grid">${g.brands.map(tile).join('')}</div>
+          </div>`).join('');
+      } else {
+        brandsBox.innerHTML = brandsList.map(tile).join('');
+      }
       $('#brands-section').hidden = false;
     }
   }
@@ -133,14 +147,21 @@
     sort.value = state.sort;
 
     const all = Catalog.products();
-    /* Filtro por marca: solo aparece si hay marcas con productos */
-    const usedBrands = Catalog.brands().filter((b) => b.id === state.brand || all.some((p) => p.brand === b.id));
-    if (brandSel) {
-      brandSel.closest('.toolbar-brand').hidden = usedBrands.length === 0;
-      brandSel.innerHTML = '<option value="all">Todas las marcas</option>' + usedBrands.map((b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');
+    /* Filtro por marca: muestra solo las marcas con productos en la categoría elegida
+       (agrupadas por rubro si hay más de uno). Si no hay ninguna, se oculta. */
+    const inCat = (p) => state.cat === 'all' || p.category === state.cat;
+    function renderBrandSelect() {
+      if (!brandSel) return;
+      const used = Catalog.brands().filter((b) => b.id === state.brand || all.some((p) => p.brand === b.id && inCat(p)));
+      const opt = (b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`;
+      const groups = Catalog.groupBrands(used);
+      brandSel.closest('.toolbar-brand').hidden = used.length === 0;
+      brandSel.innerHTML = '<option value="all">Todas las marcas</option>' + (groups.length > 1
+        ? groups.map((g) => `<optgroup label="${esc(g.name)}">${g.brands.map(opt).join('')}</optgroup>`).join('')
+        : used.map(opt).join(''));
       brandSel.value = state.brand;
-      brandSel.addEventListener('change', () => { state.brand = brandSel.value; render(); });
     }
+    if (brandSel) brandSel.addEventListener('change', () => { state.brand = brandSel.value; render(); });
     const countBy = (id) => all.filter((p) => id === 'all' || p.category === id).length;
 
     function renderChips() {
@@ -164,6 +185,7 @@
     function render() {
       const list = filtered();
       renderChips();
+      renderBrandSelect();
       count.textContent = list.length === 1 ? '1 producto' : `${list.length} productos`;
       if (!list.length) {
         const onlyBrand = state.brand !== 'all' && state.cat === 'all' && !state.q.trim();
@@ -188,6 +210,8 @@
       const b = e.target.closest('[data-cat]');
       if (!b) return;
       state.cat = b.dataset.cat;
+      /* Si la marca elegida no tiene productos en la nueva categoría, se vuelve a "Todas las marcas" */
+      if (state.brand !== 'all' && !all.some((p) => p.brand === state.brand && inCat(p))) state.brand = 'all';
       render();
       const active = chips.querySelector('.is-active');
       if (active) { active.focus({ preventScroll: true }); if (active.scrollIntoView) active.scrollIntoView({ inline: 'center', block: 'nearest' }); }
@@ -226,6 +250,149 @@
   }
 
   /* ==========================================================
+     FICHA DE PRODUCTO (producto.html?id=...)
+     ========================================================== */
+  function initProduct() {
+    const root = $('#product-root');
+    const p = Catalog.get(new URLSearchParams(location.search).get('id') || '');
+    if (!p) {
+      document.title = 'Producto no encontrado | BLACK Río Cuarto';
+      root.innerHTML = `<div class="empty empty-lg"><h1>Producto no encontrado</h1><p>Puede que ya no esté a la venta o que el link haya cambiado.</p><a class="btn btn-red btn-lg" href="productos.html">Ver productos</a></div>`;
+      return;
+    }
+    const s = stockInfo(p);
+    const avail = Catalog.isAvailable(p);
+    const catName = Catalog.categoryName(p.category);
+    const brand = Catalog.brandName(p.brand);
+    const brandLogo = Catalog.brandLogo(p.brand);
+    const facts = [].concat(brand ? [['Marca', brand]] : [], catName ? [['Categoría', catName]] : [], (p.specs || []).map((x) => [x.label, x.value]));
+    const related = Catalog.products().filter((x) => x.id !== p.id && x.category === p.category)
+      .sort((a, b) => (Catalog.isAvailable(b) - Catalog.isAvailable(a)) || ((b.brand === p.brand) - (a.brand === p.brand))).slice(0, 4);
+    const waText = `Hola BLACK, quiero consultar por ${p.name}${brand ? ` (${brand})` : ''}.`;
+
+    document.title = `${p.name} | BLACK Río Cuarto`;
+    const metaDesc = $('meta[name="description"]');
+    if (metaDesc && p.description) metaDesc.content = p.description.slice(0, 160);
+
+    root.innerHTML = `
+      <nav class="crumbs" aria-label="Ruta">
+        <a href="productos.html">Productos</a>
+        ${catName ? `<span aria-hidden="true">›</span><a href="productos.html?categoria=${encodeURIComponent(p.category)}">${esc(catName)}</a>` : ''}
+      </nav>
+      <article class="pd${avail ? '' : ' is-out'}">
+        <div class="pd-gallery">
+          ${p.image
+            ? `<button class="p-media pd-media" type="button" id="pd-zoom" aria-label="Ampliar imagen de ${esc(p.name)}">${mediaHTML(p)}<span class="pd-zoom-hint" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>Ampliar</span></button>`
+            : `<div class="p-media pd-media">${mediaHTML(p)}</div>`}
+        </div>
+        <div class="pd-info">
+          ${brand ? `<a class="pd-brand" href="productos.html?marca=${encodeURIComponent(p.brand)}">${brandLogo ? `<img class="p-brand-logo" src="${esc(brandLogo)}" alt="" width="40" height="28">` : ''}<span>${esc(brand)}</span></a>` : ''}
+          <h1 class="pd-name">${esc(p.name)}</h1>
+          <p class="pd-price">${fmt(p.price)}</p>
+          <p class="stock stock-${s.cls}">${s.text}</p>
+          ${avail ? `
+          <div class="pd-buy">
+            <div class="pd-qty">
+              <span class="label" id="pd-qty-label">Cantidad</span>
+              <div class="stepper" role="group" aria-labelledby="pd-qty-label">
+                <button type="button" data-step="-1" aria-label="Restar uno"><svg class="ico" aria-hidden="true"><use href="#i-minus"/></svg></button>
+                <output id="pd-qty" aria-live="polite">1</output>
+                <button type="button" data-step="1" aria-label="Sumar uno"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+              </div>            </div>
+            <button class="btn btn-red btn-lg btn-block" type="button" id="pd-add"><svg class="ico" aria-hidden="true"><use href="#i-cart"/></svg>Agregar al carrito</button>
+            <button class="btn btn-lg btn-block" type="button" id="pd-buy-now">Comprar ahora</button>
+          </div>`
+          : `<button class="btn btn-lg btn-block" type="button" disabled>Sin stock</button>`}
+          <a class="btn btn-wa btn-block pd-wa" href="${waLink(waText)}" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Consultar por WhatsApp</a>
+          <ul class="pd-perks">
+            <li><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg><span><strong>Retiro en el local sin costo.</strong> ${esc(cfg.business.address)}, ${esc(cfg.business.city)}.</span></li>
+            <li><svg class="ico" aria-hidden="true"><use href="#i-car"/></svg><span><strong>Envío a domicilio</strong> dentro de Río Cuarto. El costo se coordina con el personal.</span></li>
+            <li><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg><span><strong>Pagás en efectivo o por transferencia.</strong> Con envío, solo transferencia.</span></li>
+          </ul>
+        </div>
+        <div class="pd-details">
+          <section class="card" aria-labelledby="pd-desc-t">
+            <h2 id="pd-desc-t">Descripción</h2>
+            ${p.description ? p.description.split(/\n{2,}/).map((par) => `<p class="pd-desc">${esc(par.trim())}</p>`).join('') : '<p class="fine">Consultanos por WhatsApp por más información de este producto.</p>'}
+          </section>
+          ${facts.length ? `
+          <section class="card" aria-labelledby="pd-facts-t">
+            <h2 id="pd-facts-t">Datos del producto</h2>
+            <table class="pd-specs">
+              <tbody>${facts.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody>
+            </table>
+          </section>` : ''}
+        </div>
+      </article>
+      ${related.length ? `
+      <section class="pd-related" aria-labelledby="pd-rel-t">
+        <div class="section-head"><h2 id="pd-rel-t">También te puede interesar</h2>${catName ? `<a class="text-link" href="productos.html?categoria=${encodeURIComponent(p.category)}">Ver ${esc(catName)}<svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>` : ''}</div>
+        <div class="product-grid">${related.map(productCard).join('')}</div>
+      </section>` : ''}`;
+
+    /* Cantidad y compra */
+    let qty = 1;
+    const out = $('#pd-qty');
+    const syncQty = () => {
+      if (!out) return;
+      out.textContent = qty;
+      $$('[data-step]', root).forEach((b) => { b.disabled = b.dataset.step < 0 ? qty <= 1 : qty >= p.stock; });
+    };
+    syncQty();
+    root.addEventListener('click', (e) => {
+      const step = e.target.closest('[data-step]');
+      if (step) { qty = Math.min(p.stock, Math.max(1, qty + Number(step.dataset.step))); syncQty(); }
+    });
+    const addQty = () => {
+      const before = Cart.qtyOf(p.id);
+      const r = Cart.add(p.id, qty);
+      return r.ok ? { ok: true, added: r.qty - before } : r;
+    };
+    const addBtn = $('#pd-add');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        const r = addQty();
+        if (r.ok) B.toast(r.added === 1 ? `${p.name} agregado al carrito.` : `Agregaste ${r.added} unidades de ${p.name}.`, { href: 'carrito.html', label: 'Ver carrito' });
+        else B.toast(r.reason === 'max' ? 'Ya tenés en el carrito todo el stock disponible.' : 'Este producto está sin stock.');
+      });
+      $('#pd-buy-now').addEventListener('click', () => {
+        const r = addQty();
+        if (r.ok || r.reason === 'max') location.href = 'carrito.html';
+        else B.toast('Este producto está sin stock.');
+      });
+    }
+
+    /* Imagen ampliada */
+    const zoomBtn = $('#pd-zoom');
+    const dlg = $('#zoom-dialog');
+    if (zoomBtn && dlg && dlg.showModal) {
+      const img = $('#zoom-img');
+      zoomBtn.addEventListener('click', () => {
+        if (!zoomBtn.querySelector('.p-photo')) return;   // la foto no cargó: queda el dibujo
+        img.src = p.image; img.alt = p.name;
+        dlg.showModal();
+      });
+      $('#zoom-close').addEventListener('click', () => dlg.close());
+      dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    }
+
+    /* Datos estructurados para buscadores */
+    const ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: p.name,
+      description: p.description,
+      category: catName,
+      ...(p.image ? { image: new URL(p.image, location.href).href } : {}),
+      ...(brand ? { brand: { '@type': 'Brand', name: brand } } : {}),
+      offers: { '@type': 'Offer', priceCurrency: 'ARS', price: p.price, availability: avail ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' },
+    });
+    document.head.appendChild(ld);
+  }
+
+  /* ==========================================================
      CARRITO
      ========================================================== */
   function initCart() {
@@ -256,7 +423,7 @@
               <td class="c-prod"><div class="c-inner">
                 <div class="c-thumb">${mediaHTML(l.product)}</div>
                 <div>
-                  <p class="c-name">${esc(l.product.name)}</p>
+                  <p class="c-name"><a href="${productURL(l.product)}">${esc(l.product.name)}</a></p>
                   <button class="link-btn" type="button" data-remove="${esc(l.product.id)}">Quitar<span class="sr-only"> ${esc(l.product.name)} del carrito</span></button>
                 </div>
               </div></td>
@@ -279,7 +446,7 @@
             <div><dt>Subtotal</dt><dd>${fmt(total)}</dd></div>
             <div class="total"><dt>TOTAL</dt><dd>${fmt(total)}</dd></div>
           </dl>
-          <p class="fine">El costo de envío, si elegís envío a domicilio, se coordina con el local.</p>
+          <p class="fine">Si elegís envío a domicilio, el costo se coordina con el personal.</p>
           <a class="btn btn-red btn-lg btn-block summary-cta" href="checkout.html">Continuar con el pedido</a>
           <a class="btn btn-line btn-block" href="productos.html">Seguir comprando</a>
         </aside>
@@ -342,14 +509,8 @@
         <input type="radio" name="delivery" value="${esc(d.id)}"${i === 0 ? ' checked' : ''}>
         <span class="choice-box"><strong>${esc(d.label)}</strong><small>${esc(d.note)}</small></span>
       </label>`).join('');
-    const payMethods = (cfg.payments && cfg.payments.methods) || [];
-    $('#payment-options').innerHTML = payMethods.map((m, i) => `
-      <label class="choice">
-        <input type="radio" name="payment" value="${esc(m)}"${i === 0 ? ' checked' : ''}>
-        <span class="choice-box"><strong>${esc(m)}</strong></span>
-      </label>`).join('');
-    $('#payment-options').closest('.form-card').hidden = payMethods.length === 0;
-    $('#payment-note').textContent = 'El pago se hace en el local o como acuerden por WhatsApp. No se cobra nada en la web.';
+    const allPayMethods = (cfg.payments && cfg.payments.methods) || [];
+    const payOptions = $('#payment-options');
 
     function renderSummary(noticeList = []) {
       const lines = Cart.lines();
@@ -365,10 +526,29 @@
     renderSummary(notes);
 
     const selectedDelivery = () => (form.querySelector('input[name="delivery"]:checked') || {}).value;
-    const needsAddress = () => (cfg.delivery.find((d) => d.id === selectedDelivery()) || {}).needsAddress;
+    const deliveryCfg = () => cfg.delivery.find((d) => d.id === selectedDelivery()) || {};
+    const needsAddress = () => deliveryCfg().needsAddress;
     function syncAddress() { addressField.hidden = !needsAddress(); }
-    form.addEventListener('change', (e) => { if (e.target.name === 'delivery') syncAddress(); });
+
+    /* Medios de pago según la entrega: con envío a domicilio, solo transferencia */
+    function syncPayments() {
+      const allowed = deliveryCfg().payments;
+      const methods = Array.isArray(allowed) ? allPayMethods.filter((m) => allowed.includes(m)) : allPayMethods;
+      const current = (form.querySelector('input[name="payment"]:checked') || {}).value;
+      const pick = methods.includes(current) ? current : methods[0];
+      payOptions.innerHTML = methods.map((m) => `
+        <label class="choice">
+          <input type="radio" name="payment" value="${esc(m)}"${m === pick ? ' checked' : ''}>
+          <span class="choice-box"><strong>${esc(m)}</strong></span>
+        </label>`).join('');
+      payOptions.closest('.form-card').hidden = methods.length === 0;
+      $('#payment-note').textContent = needsAddress()
+        ? 'Con envío a domicilio el pago es solo por transferencia. Te pasamos los datos por WhatsApp. No se cobra nada en la web.'
+        : 'Pagás en efectivo al retirar, o por transferencia. No se cobra nada en la web.';
+    }
+    form.addEventListener('change', (e) => { if (e.target.name === 'delivery') { syncAddress(); syncPayments(); } });
     syncAddress();
+    syncPayments();
 
     const fields = {
       name: { el: form.elements.name, check: (v) => v.trim().length >= 3 && v.trim().includes(' ') ? '' : 'Escribí tu nombre y apellido.' },
@@ -517,6 +697,7 @@
   Catalog.load().then(() => {
     if (page === 'home') initHome();
     else if (page === 'productos') initCatalog();
+    else if (page === 'producto') initProduct();
     else if (page === 'carrito') initCart();
     else if (page === 'checkout') initCheckout();
     else if (page === 'pedido') initOrderDone();

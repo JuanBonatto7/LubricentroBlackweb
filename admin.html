@@ -116,8 +116,13 @@
         <p class="field-error" id="p-err-name"></p>
       </div>
       <div class="field">
-        <label for="p-desc">Descripción corta</label>
-        <input id="p-desc" name="description" type="text" maxlength="120">
+        <label for="p-desc">Descripción <span class="opt">(se ve en la ficha del producto)</span></label>
+        <textarea id="p-desc" name="description" rows="4" maxlength="2000"></textarea>
+      </div>
+      <div class="field">
+        <label for="p-specs">Datos del producto <span class="opt">(uno por línea, “Dato: valor”)</span></label>
+        <textarea id="p-specs" name="specs" rows="4" placeholder="Viscosidad: 5W-30&#10;Contenido: 4 litros&#10;Tipo: Sintético" aria-describedby="p-specs-help"></textarea>
+        <p class="fine" id="p-specs-help">Ej.: viscosidad, contenido, tipo, para qué vehículos sirve, código del filtro.</p>
       </div>
       <div class="field-row">
         <div class="field">
@@ -179,6 +184,10 @@
       <div class="field" id="m-icon-field">
         <span class="label" id="m-icon-label">Ícono</span>
         <div class="icon-pick" id="m-icons" role="radiogroup" aria-labelledby="m-icon-label"></div>
+      </div>
+      <div class="field" id="m-group-field">
+        <label for="m-group">Rubro</label>
+        <select class="select" id="m-group" name="group"></select>
       </div>
       <div class="field" id="m-logo-field">
         <span class="label">Logo <span class="opt">(opcional)</span></span>

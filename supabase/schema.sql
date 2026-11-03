@@ -19,7 +19,7 @@ create table if not exists public.categories (
 create table if not exists public.products (
   id text primary key check (id ~ '^[a-z0-9-]+$'),
   name text not null check (char_length(name) between 1 and 160),
-  description text not null default '' check (char_length(description) <= 500),
+  description text not null default '' check (char_length(description) <= 2000),
   price numeric(12,2) not null check (price >= 0),
   stock integer not null default 0 check (stock >= 0),
   sold_out boolean not null default false,
@@ -164,6 +164,10 @@ create table if not exists public.brands (
   created_at timestamptz not null default now()
 );
 alter table public.brands add column if not exists logo_url text;
+-- Rubro de la marca (detailing, lubricantes, filtros): ver brandGroups en js/config.js
+alter table public.brands add column if not exists rubro text not null default 'detailing';
+alter table public.brands drop constraint if exists brands_rubro_check;
+alter table public.brands add constraint brands_rubro_check check (rubro ~ '^[a-z0-9-]{1,40}$');
 create unique index if not exists brands_name_unique on public.brands (lower(name));
 alter table public.brands enable row level security;
 
@@ -184,6 +188,12 @@ create policy brands_admin_delete on public.brands
 alter table public.products add column if not exists brand_id text
   references public.brands(id) on delete set null;
 create index if not exists products_brand_idx on public.products(brand_id);
+
+-- Datos del producto (ficha): lista de { label, value }. Ver migración del 03/11/2026.
+alter table public.products add column if not exists specs jsonb not null default '[]'::jsonb;
+alter table public.products drop constraint if exists products_specs_check;
+alter table public.products add constraint products_specs_check
+  check (jsonb_typeof(specs) = 'array' and jsonb_array_length(specs) <= 30);
 
 -- ---------- Crear pedido (lo llama la tienda) ----------
 -- Recalcula precios con la base, verifica y descuenta stock y asigna el número.

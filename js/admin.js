@@ -16,9 +16,12 @@
   let brands = [];
   let orders = [];
   let brandsReady = true;   // false si la tabla de marcas todavía no existe en Supabase
+  let specsReady = true;    // false si falta la columna specs (migración del 03/11/2026)
+  let groupsReady = true;   // false si falta la columna rubro en marcas (migración del 03/11/2026)
 
   const catName = (id) => (categories.find((c) => c.id === id) || {}).name || '—';
   const brandName = (id) => (brands.find((b) => b.id === id) || {}).name || '';
+  const groupName = (id) => (B.cfg.brandGroups.find((g) => g.id === id) || {}).name || 'Sin rubro';
   const ICONS = [['spark', 'Brillo'], ['car', 'Auto'], ['seat', 'Asiento'], ['shield', 'Protección'], ['bag', 'Bolsa'], ['drop', 'Gota'], ['filter', 'Filtro'], ['wrench', 'Llave'], ['bubbles', 'Espuma'], ['spray', 'Rociador'], ['cloth', 'Paño'], ['bottle', 'Botella'], ['dots', 'Otros']];
 
   /* ---------- Mapeos base de datos ⇄ pantalla ---------- */
@@ -50,13 +53,25 @@
     const { data, error } = await sb.from('brands').select('*').order('name');
     brandsReady = !error;
     brands = error ? [] : data;
-    brandSelect.innerHTML = '<option value="">Sin marca</option>' + brands.map((b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');
+    groupsReady = brandsReady && (!brands.length || 'rubro' in brands[0]);
+    const opt = (b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`;
+    brandSelect.innerHTML = '<option value="">Sin marca</option>' + (groupsReady
+      ? B.Catalog.groupBrands(brands.map((b) => Object.assign({}, b, { group: b.rubro }))).map((g) => `<optgroup label="${esc(g.name)}">${g.brands.map(opt).join('')}</optgroup>`).join('')
+      : brands.map(opt).join(''));
   }
   async function loadProducts() {
     const { data, error } = await sb.from('products').select('*').order('created_at', { ascending: false }).order('name');
     if (error) throw error;
+    specsReady = !data.length || 'specs' in data[0];
     products = data.map(B.rowToProduct);
   }
+
+  /* Datos del producto: en el formulario es texto ("Dato: valor" por línea), en la base una lista */
+  const specsToText = (specs) => (specs || []).map((s) => `${s.label}: ${s.value}`).join('\n');
+  const textToSpecs = (text) => text.split('\n')
+    .map((line) => { const i = line.indexOf(':'); return i > 0 ? { label: line.slice(0, i).trim().slice(0, 60), value: line.slice(i + 1).trim().slice(0, 200) } : null; })
+    .filter((s) => s && s.label && s.value)
+    .slice(0, 30);
   async function loadOrders() {
     const { data, error } = await sb.from('orders').select('*, order_items(*)').order('created_at', { ascending: false });
     if (error) throw error;
@@ -217,6 +232,9 @@
     $('#prod-dialog-title').textContent = p ? 'Editar producto' : 'Nuevo producto';
     form.elements.name.value = p ? p.name : '';
     form.elements.description.value = p ? p.description || '' : '';
+    form.elements.specs.value = p ? specsToText(p.specs) : '';
+    form.elements.specs.disabled = !specsReady;
+    form.elements.description.maxLength = specsReady ? 2000 : 500;   // sin la migración la base acepta hasta 500
     form.elements.price.value = p ? p.price : '';
     form.elements.stock.value = p ? p.stock : '';
     form.elements.category.value = p ? p.category : (categories[0] || {}).id;
@@ -340,6 +358,7 @@
         active: form.elements.active.checked,
         image_url: imageUrl || null,
         ...(brandsReady ? { brand_id: form.elements.brand.value || null } : {}),
+        ...(specsReady ? { specs: textToSpecs(form.elements.specs.value) } : {}),
         art: (editing && editing.art) || { shape: 'bottle', color: '#e11d2e' },
       };
       const { error } = await sb.from('products').upsert(row);
@@ -379,7 +398,7 @@
     brandList.innerHTML = brands.length ? brands.map((b) => `
       <article class="adm-mini">
         <div class="brand-tile brand-tile-sm">${b.logo_url ? `<img src="${esc(b.logo_url)}" alt="">` : `<span class="brand-tile-name">${esc(b.name.slice(0, 2))}</span>`}</div>
-        <div class="adm-main-info"><p class="adm-name">${esc(b.name)}</p><p class="adm-sub">${plural(countBy('brand', b.id))}</p></div>
+        <div class="adm-main-info"><p class="adm-name">${esc(b.name)}</p><p class="adm-sub">${groupsReady ? `${esc(groupName(b.rubro))} · ` : ''}${plural(countBy('brand', b.id))}</p></div>
         <div class="adm-row-actions">
           <button class="btn btn-line" type="button" data-brand-edit="${esc(b.id)}">Editar</button>
           <button class="btn btn-line adm-del" type="button" data-brand-del="${esc(b.id)}" aria-label="Eliminar marca ${esc(b.name)}">Eliminar</button>
@@ -394,6 +413,7 @@
   let miniEditing = null;
   let miniIcon = 'dots';
   let miniLogo = '';   // URL actual, o data: URL si se eligió un logo nuevo
+  miniForm.elements.group.innerHTML = B.cfg.brandGroups.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('');
 
   function showLogo() {
     $('#m-logo-preview').innerHTML = miniLogo ? `<img src="${esc(miniLogo)}" alt="Vista previa del logo">` : '<span class="fine">Sin logo</span>';
@@ -452,6 +472,8 @@
     $('#m-icon-field').hidden = !isCat;
     $('#m-order-field').hidden = !isCat;
     $('#m-logo-field').hidden = isCat;
+    $('#m-group-field').hidden = isCat || !groupsReady;
+    if (!isCat) miniForm.elements.group.value = (item && item.rubro) || (B.cfg.brandGroups[0] || {}).id || '';
     miniLogo = (!isCat && item && item.logo_url) || '';
     $('#m-logo').value = '';
     $('#m-logo-msg').textContent = 'PNG o JPG. Mejor con fondo blanco o transparente.';
@@ -498,7 +520,7 @@
       const id = miniEditing ? miniEditing.id : uniqueSlug(name, list);
       const row = isCat
         ? { name, icon: miniIcon, sort_order: Math.max(0, parseInt(miniForm.elements.order.value, 10) || 0) }
-        : { name };
+        : { name, ...(groupsReady ? { rubro: miniForm.elements.group.value } : {}) };
       if (!isCat) {
         const before = (miniEditing && miniEditing.logo_url) || '';
         if (miniLogo.startsWith('data:')) row.logo_url = await uploadLogo(id);

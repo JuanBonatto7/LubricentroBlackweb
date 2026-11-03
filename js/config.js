@@ -42,12 +42,21 @@ window.BLACK_CONFIG = {
   payments: {
     provider: 'none',
     /* Medios de pago que elige el cliente al hacer el pedido (se mandan en el mensaje de WhatsApp).
-       ⚠️ Confirmar con el local cuáles acepta. El primero queda elegido por defecto. */
-    methods: ['A coordinar por WhatsApp', 'Efectivo', 'Transferencia', 'Mercado Pago', 'Tarjeta de débito o crédito'],
+       Cada forma de entrega dice cuáles acepta (ver `payments` en delivery). */
+    methods: ['Efectivo', 'Transferencia'],
   },
 
+  /* Rubros de las marcas: agrupan las marcas en el inicio y en el filtro del catálogo.
+     Se elige uno al crear o editar cada marca en el panel. `id` sin espacios ni mayúsculas. */
+  brandGroups: [
+    { id: 'detailing', name: 'Detailing y limpieza' },
+    { id: 'lubricantes', name: 'Lubricantes' },
+    { id: 'filtros', name: 'Filtros' },
+  ],
+
+  /* payments: medios de pago que se aceptan con esa entrega (el primero queda elegido por defecto) */
   delivery: [
-    { id: 'retiro', label: 'Retiro en el local', note: 'Sin costo. Te avisamos por WhatsApp cuando esté listo.', needsAddress: false },
-    { id: 'envio', label: 'Envío a domicilio', note: 'Solo dentro de Río Cuarto. El costo se coordina por WhatsApp.', needsAddress: true },
+    { id: 'retiro', label: 'Retiro en el local', note: 'Sin costo. Te avisamos por WhatsApp cuando esté listo.', needsAddress: false, payments: ['Efectivo', 'Transferencia'] },
+    { id: 'envio', label: 'Envío a domicilio', note: 'Solo dentro de Río Cuarto. El costo se coordina por WhatsApp. Pago solo por transferencia.', needsAddress: true, payments: ['Transferencia'] },
   ],
 };

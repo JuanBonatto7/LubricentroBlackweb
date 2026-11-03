@@ -48,7 +48,8 @@
     active: r.active !== false,
     image: r.image_url || '',
     brand: r.brand_id || '',
-    art: r.art && r.art.shape ? r.art : { shape: 'bottle', color: '#e11d2e' },
+    specs: Array.isArray(r.specs) ? r.specs.filter((s) => s && s.label && s.value) : [],
+    art:r.art && r.art.shape ? r.art : { shape: 'bottle', color: '#e11d2e' },
   });
 
   /* Estados que maneja el panel de administración */
@@ -109,7 +110,7 @@
           window.BLACK_PRODUCTS = p.data.map(rowToProduct);
           /* Las marcas se leen aparte: si fallan, el catálogo se muestra igual, sin marcas */
           const b = await sb.from('brands').select('*').order('name');
-          window.BLACK_BRANDS = b.error ? [] : b.data.map((x) => ({ id: x.id, name: x.name, logo: x.logo_url || '' }));
+          window.BLACK_BRANDS = b.error ? [] : b.data.map((x) => ({ id: x.id, name: x.name, logo: x.logo_url || '', group: x.rubro || '' }));
         } catch (e) {
           console.warn('No se pudo leer el catálogo de Supabase; se usa el catálogo local.', e);
         }
@@ -135,6 +136,14 @@
     brands() { return window.BLACK_BRANDS || []; },
     brandName(id) { const b = this.brands().find((x) => x.id === id); return b ? b.name : ''; },
     brandLogo(id) { const b = this.brands().find((x) => x.id === id); return b ? b.logo || '' : ''; },
+    /* Agrupa marcas por rubro, en el orden de cfg.brandGroups. Las de rubro desconocido van a "Otras marcas". */
+    groupBrands(list) {
+      const defs = cfg.brandGroups || [];
+      const groups = defs.map((g) => ({ id: g.id, name: g.name, brands: list.filter((b) => b.group === g.id) }));
+      const rest = list.filter((b) => !defs.some((g) => g.id === b.group));
+      if (rest.length) groups.push({ id: 'otras', name: 'Otras marcas', brands: rest });
+      return groups.filter((g) => g.brands.length);
+    },
     isAvailable(p) { return !p.soldOut && p.stock > 0; },
   };
 
