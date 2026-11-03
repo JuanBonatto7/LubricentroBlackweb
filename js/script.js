@@ -27,12 +27,12 @@
     return drawing + photo;
   }
 
-  /* Marca del producto: logo chico + nombre (reemplaza a la descripción en la tarjeta) */
+  /* Marca del producto: el logo o, si no tiene, el nombre (nunca los dos) */
   function brandHTML(p) {
     const name = Catalog.brandName(p.brand);
     if (!name) return '';
     const logo = Catalog.brandLogo(p.brand);
-    return `${logo ? `<img class="p-brand-logo" src="${esc(logo)}" alt="" loading="lazy" width="40" height="28">` : ''}<span class="p-brand">${esc(name)}</span>`;
+    return logo ? `<img class="p-brand-logo" src="${esc(logo)}" alt="${esc(name)}" loading="lazy" width="56" height="32">` : `<span class="p-brand">${esc(name)}</span>`;
   }
 
   const productURL = (p) => `/producto?id=${encodeURIComponent(p.id)}`;
@@ -286,7 +286,7 @@
             : `<div class="p-media pd-media">${mediaHTML(p)}</div>`}
         </div>
         <div class="pd-info">
-          ${brand ? `<a class="pd-brand" href="/productos?marca=${encodeURIComponent(p.brand)}">${brandLogo ? `<img class="p-brand-logo" src="${esc(brandLogo)}" alt="" width="40" height="28">` : ''}<span>${esc(brand)}</span></a>` : ''}
+          ${brand ? `<a class="pd-brand" href="/productos?marca=${encodeURIComponent(p.brand)}">${brandLogo ? `<img class="p-brand-logo" src="${esc(brandLogo)}" alt="Ver productos ${esc(brand)}" width="56" height="32">` : `<span>${esc(brand)}</span>`}</a>` : ''}
           <h1 class="pd-name">${esc(p.name)}</h1>
           <p class="pd-price">${fmt(p.price)}</p>
           <p class="stock stock-${s.cls}">${s.text}</p>
@@ -646,6 +646,7 @@
       <section class="wa-step" aria-labelledby="wa-step-title">
         <h2 id="wa-step-title">Último paso: envialo por WhatsApp</h2>
         <p>Tu pedido <strong>todavía no le llegó al local</strong>. Tocá el botón, se abre WhatsApp con el pedido ya escrito y solo tenés que enviarlo. Ahí coordinamos ${envio ? 'el envío, ' : ''}el pago y ${envio ? 'la entrega' : 'el retiro'}.</p>
+        <p class="fine">Te reservamos los productos por 24 horas. Si en ese tiempo el pedido no se confirma, se cancela solo.</p>
         <a class="btn btn-wa btn-lg" href="${waHref}" target="_blank" rel="noopener" id="wa-send"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Enviar pedido por WhatsApp</a>
       </section>
       <div class="done-grid">

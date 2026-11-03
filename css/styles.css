@@ -411,7 +411,7 @@ body.has-bar .toast { bottom: 96px; }
 
 /* Marca en la tarjeta de producto */
 .p-brandline { display: flex; flex: 1; align-items: flex-start; gap: 8px; min-height: 28px; margin-bottom: 10px; }
-.p-brand-logo { width: auto; max-width: 56px; height: 28px; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: #fff; object-fit: contain; }
+.p-brand-logo { width: auto; max-width: 84px; height: 32px; padding: 2px 4px; border: 1px solid var(--line); border-radius: 4px; background: #fff; object-fit: contain; }
 .p-brand { align-self: center; color: var(--ink); font-size: .9rem; font-weight: 700; }
 
 /* Pedido por WhatsApp */
@@ -483,8 +483,17 @@ body.has-bar .toast { bottom: 96px; }
 /* Links de la tarjeta a la ficha del producto */
 a.p-media { text-decoration: none; }
 .p-name a, .c-name a { text-decoration: none; }
-.p-name a:hover, .c-name a:hover { color: var(--red-dark); text-decoration: underline; }
-.p-card:has(a.p-media:hover) .p-name a { color: var(--red-dark); }
+.p-name a:hover, .c-name a:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* Al pasar por la foto o el nombre: nombre subrayado, foto apenas más grande y aviso "Ver producto" */
+a.p-media { overflow: hidden; }
+.p-card:has(a.p-media:hover) .p-name a, .p-card:has(.p-name a:hover) .p-name a { text-decoration: underline; text-underline-offset: 3px; }
+@media (hover: hover) {
+  a.p-media .p-photo, a.p-media .p-art { transition: transform .2s; }
+  a.p-media::after { content: "Ver producto"; position: absolute; left: 50%; bottom: 12px; padding: 7px 14px; border-radius: 18px; background: var(--black); color: #fff; font-size: .84rem; font-weight: 700; white-space: nowrap; opacity: 0; transform: translate(-50%, 6px); transition: opacity .15s, transform .15s; pointer-events: none; }
+  .p-card:has(a.p-media:hover) .p-photo, .p-card:has(.p-name a:hover) .p-photo, .p-card:has(a.p-media:hover) .p-art, .p-card:has(.p-name a:hover) .p-art { transform: scale(1.04); }
+  .p-card:has(a.p-media:hover) a.p-media::after, .p-card:has(.p-name a:hover) a.p-media::after { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) { a.p-media .p-photo, a.p-media .p-art, a.p-media::after { transition: none; } }
 
 /* ==========================================================
    Ficha de producto (producto.html)
@@ -503,6 +512,8 @@ button.pd-media { cursor: zoom-in; }
 .pd-info { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .pd-brand { display: inline-flex; align-items: center; align-self: flex-start; gap: 8px; min-height: 36px; color: var(--ink); font-weight: 700; text-decoration: none; }
 .pd-brand:hover span { color: var(--red-dark); text-decoration: underline; }
+.pd-brand .p-brand-logo { max-width: 110px; height: 40px; }
+.pd-brand:hover .p-brand-logo { border-color: var(--ink); }
 .pd-name { margin: 0; font-size: clamp(1.9rem, 6vw, 2.6rem); line-height: 1; text-transform: none; overflow-wrap: break-word; }
 .pd-price { margin: 4px 0 0; font: 800 2.6rem/1 var(--head); }
 .pd-info .stock { margin: 0; font-size: .9rem; }
@@ -636,6 +647,7 @@ button.pd-media { cursor: zoom-in; }
 .adm-o-total { font: 800 1.35rem var(--head); text-align: right; grid-row: 1; grid-column: 2; }
 .adm-order summary .adm-badge { justify-self: start; }
 .adm-o-body { padding: 4px 14px 16px; border-top: 1px solid var(--line); }
+.adm-o-reserve { margin-top: 12px; }
 
 @media (min-width: 900px) {
   .adm-toolbar { grid-template-columns: 1fr auto; }

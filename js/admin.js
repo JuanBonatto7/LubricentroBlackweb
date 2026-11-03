@@ -40,6 +40,8 @@
     total: Number(r.total),
     status: r.status,
     payment: { status: r.payment_status },
+    reservedUntil: r.reserved_until || '',
+    expired: !!r.expired_at,
   });
 
   /* ---------- Carga de datos ---------- */
@@ -204,7 +206,7 @@
     const out = [];
     if (p.active === false) out.push('<span class="adm-badge b-gray">Oculto</span>');
     if (p.soldOut || p.stock <= 0) out.push('<span class="adm-badge b-red">Sin stock</span>');
-    else if (p.stock <= 5) out.push('<span class="adm-badge b-amber">Stock bajo</span>');
+    else if (p.stock <= 1) out.push('<span class="adm-badge b-amber">Stock bajo</span>');
     if (p.featured) out.push('<span class="adm-badge b-dark">Destacado</span>');
     return out.join('');
   }
@@ -617,6 +619,14 @@
   const statusClass = (s) => ({ pendiente_pago: 'b-amber', pago_rechazado: 'b-red', cancelado: 'b-red', entregado: 'b-green', pago_aprobado: 'b-green' }[s] || 'b-dark');
   const opts = (map, current) => Object.entries(map).map(([k, v]) => `<option value="${k}"${k === current ? ' selected' : ''}>${v}</option>`).join('');
 
+  /* Cuánto le queda a la reserva de un pedido sin confirmar (se cancela sola a las 24 horas) */
+  function reserveLeft(o) {
+    if (o.status !== 'pendiente_pago' || !o.reservedUntil) return '';
+    const h = (new Date(o.reservedUntil) - Date.now()) / 3600000;
+    if (h <= 0) return 'por vencer';
+    return h < 1 ? 'queda menos de 1 hora' : `quedan ${Math.ceil(h)} horas`;
+  }
+
   function updateBadge() {
     const pending = orders.filter((o) => o.status === 'pendiente_pago' || o.status === 'en_preparacion').length;
     const badge = $('#orders-badge');
@@ -640,16 +650,18 @@
 
     orderList.innerHTML = rows.map((o) => {
       const when = new Date(o.createdAt).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
+      const left = reserveLeft(o);
       return `
       <article class="adm-order" data-n="${esc(o.number)}">
         <details>
           <summary>
             <span class="adm-o-num">${esc(o.number)}</span>
-            <span class="adm-o-who">${esc(o.customer.name)}<small>${esc(when)}</small></span>
+            <span class="adm-o-who">${esc(o.customer.name)}<small>${esc(when)}</small>${left ? `<small data-reserve>Reserva: ${esc(left)}</small>` : ''}${o.expired ? '<small>Se canceló solo: no se confirmó en 24 horas</small>' : ''}</span>
             <span class="adm-o-total">${fmt(o.total)}</span>
             <span class="adm-badge ${statusClass(o.status)}" data-status-badge>${esc(ORDER_STATUS[o.status] || o.status)}</span>
           </summary>
           <div class="adm-o-body">
+            ${left ? `<div class="notice notice-warn adm-o-reserve" data-reserve><p>Si te llegó el WhatsApp, cambiá el estado a <strong>En preparación</strong>. Si no se confirma, se cancela solo y el stock vuelve (${esc(left)}).</p></div>` : ''}
             <ul class="order-lines">${o.items.map((i) => `<li><span class="ol-name">${esc(i.name)}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(i.subtotal)}</span></li>`).join('')}</ul>
             <p class="order-total"><span>Total</span><strong>${fmt(o.total)}</strong></p>
             <dl class="facts">
@@ -683,6 +695,8 @@
         const b = card.querySelector('[data-status-badge]');
         b.textContent = ORDER_STATUS[o.status];
         b.className = 'adm-badge ' + statusClass(o.status);
+        // Al salir de "Reservado" ya no vence: se saca el aviso de la reserva
+        card.querySelectorAll('[data-reserve]').forEach((el) => { el.hidden = o.status !== 'pendiente_pago'; });
         // Cancelar devuelve el stock: refrescamos la lista de productos en segundo plano
         if (o.status === 'cancelado') loadProducts().then(renderProducts).catch(() => {});
       } else {

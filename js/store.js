@@ -54,7 +54,7 @@
 
   /* Estados que maneja el panel de administración */
   const ORDER_STATUS = {
-    pendiente_pago: 'Pendiente de pago',
+    pendiente_pago: 'Reservado, sin confirmar',
     pago_aprobado: 'Pago aprobado',
     pago_rechazado: 'Pago rechazado',
     en_preparacion: 'En preparación',
