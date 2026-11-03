@@ -26,6 +26,11 @@
   <symbol id="i-spray" viewBox="0 0 24 24"><path ${stroke} d="M7.5 10h6.5v10a1 1 0 0 1-1 1H8.5a1 1 0 0 1-1-1zM8.5 10V7h4l3 1.5h-3M10.5 7V4.5h-2"/><path ${stroke} d="M18.5 6h2M18 9l2 1M18 3l2-1"/></symbol>
   <symbol id="i-cloth" viewBox="0 0 24 24"><path ${stroke} d="M3.5 7.5h14a3 3 0 0 1 3 3v6.5h-14a3 3 0 0 1-3-3z"/><path ${stroke} d="M3.5 7.5v6.5M8 11.5h8M8 14.5h5"/></symbol>
   <symbol id="i-bottle" viewBox="0 0 24 24"><path ${stroke} d="M10 3h4v3.5l2 2.5v11a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9l2-2.5z"/><path ${stroke} d="M8 12.5h8M8 16.5h8"/></symbol>
+  <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2.5" y="7.5" width="19" height="12" rx="2" ${stroke}/><path ${stroke} d="M6 7.5V5h3.5v2.5M14.5 7.5V5H18v2.5M6.5 13.5h4M8.5 11.5v4M14 13.5h4"/></symbol>
+  <symbol id="i-oilcan" viewBox="0 0 24 24"><path ${stroke} d="M3.5 11.5h10l2.5 2.5h1.5l3-3.5v1.5L17 18H5a1.5 1.5 0 0 1-1.5-1.5z"/><path ${stroke} d="M6.5 11.5V9h4.5v2.5M8.75 9V7"/><path d="M20.5 15.5c0 .9-.6 1.5-1.2 1.5s-1.2-.6-1.2-1.5c0-.8 1.2-2.3 1.2-2.3s1.2 1.5 1.2 2.3z" fill="currentColor"/></symbol>
+  <symbol id="i-additive" viewBox="0 0 24 24"><path ${stroke} d="M9.5 2.5h5v3l2.5 3.5v11a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 7 20V9l2.5-3.5z"/><path ${stroke} d="M12 11.5v6M9 14.5h6"/></symbol>
+  <symbol id="i-oilfilter" viewBox="0 0 24 24"><path ${stroke} d="M4.5 3.5h15v3h-15zM6 6.5h12v12.5a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/><path ${stroke} d="M9.5 10v7.5M12 10v7.5M14.5 10v7.5"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 24 24"><path ${stroke} d="M12 4l4.5 6h-2.5l4 5h-3.5l3 4.5h-11l3-4.5H6l4-5H7.5z"/><path ${stroke} d="M12 4V1.5M12 19.5V22"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" ${stroke}/><path ${stroke} d="M16 16l5 5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path ${stroke} d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-minus" viewBox="0 0 24 24"><path ${stroke} d="M5 12h14"/></symbol>
@@ -49,23 +54,23 @@
 
   /* ---------- Header ---------- */
   const nav = [
-    ['index.html', 'Inicio', 'home'],
-    ['productos.html', 'Productos', 'productos'],
-    ['lubricentro.html', 'Lubricentro', 'lubricentro'],
-    ['contacto.html', 'Contacto', 'contacto'],
+    ['/', 'Inicio', 'home'],
+    ['/productos', 'Productos', 'productos'],
+    ['/lubricentro', 'Lubricentro', 'lubricentro'],
+    ['/contacto', 'Contacto', 'contacto'],
   ];
   const header = document.getElementById('site-header');
   if (header) {
     header.innerHTML = `
     <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="${esc(b.name)}, inicio">
+      <a class="brand" href="/" aria-label="${esc(b.name)}, inicio">
         <img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="64" height="64">
       </a>
       <nav class="site-nav" id="site-nav" aria-label="Principal">
         ${nav.map(([href, label, id]) => `<a href="${href}"${id === page ? ' aria-current="page"' : ''}>${label}</a>`).join('')}
       </nav>
       <div class="header-actions">
-        <a class="cart-link${page === 'carrito' ? ' is-current' : ''}" href="carrito.html" id="cart-link" aria-label="Carrito">
+        <a class="cart-link${page === 'carrito' ? ' is-current' : ''}" href="/carrito" id="cart-link" aria-label="Carrito">
           <svg class="ico" aria-hidden="true"><use href="#i-cart"/></svg>
           <span class="cart-label">Carrito</span>
           <span class="cart-count" data-cart-count hidden>0</span>
@@ -107,15 +112,15 @@
     footer.innerHTML = `
     <div class="container footer-grid">
       <div class="footer-brand">
-        <a class="brand" href="index.html" aria-label="${esc(b.name)}, inicio"><img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="88" height="88" loading="lazy"></a>
+        <a class="brand" href="/" aria-label="${esc(b.name)}, inicio"><img class="brand-logo" src="assets/logo/logo.png" alt="${esc(b.name)}" width="88" height="88" loading="lazy"></a>
         <p>Lubricentro y cosmética vehicular en Río Cuarto: service, lubricantes y productos de detailing.</p>
       </div>
       <div>
         <h2>Tienda</h2>
         <ul class="footer-links">
-          <li><a href="productos.html">Productos</a></li>
-          <li><a href="carrito.html">Carrito</a></li>
-          <li><a href="lubricentro.html">Servicios de lubricentro</a></li>
+          <li><a href="/productos">Productos</a></li>
+          <li><a href="/carrito">Carrito</a></li>
+          <li><a href="/lubricentro">Servicios de lubricentro</a></li>
         </ul>
       </div>
       <div>

@@ -35,7 +35,7 @@
     return `${logo ? `<img class="p-brand-logo" src="${esc(logo)}" alt="" loading="lazy" width="40" height="28">` : ''}<span class="p-brand">${esc(name)}</span>`;
   }
 
-  const productURL = (p) => `producto.html?id=${encodeURIComponent(p.id)}`;
+  const productURL = (p) => `/producto?id=${encodeURIComponent(p.id)}`;
 
   function productCard(p) {
     const s = stockInfo(p);
@@ -78,7 +78,7 @@
     if (!btn) return;
     const p = Catalog.get(btn.dataset.add);
     const r = Cart.add(btn.dataset.add);
-    if (r.ok) B.toast(`${p.name} agregado al carrito.`, { href: 'carrito.html', label: 'Ver carrito' });
+    if (r.ok) B.toast(`${p.name} agregado al carrito.`, { href: '/carrito', label: 'Ver carrito' });
     else B.toast(r.reason === 'max' ? 'Ya tenés en el carrito todo el stock disponible.' : 'Este producto está sin stock.');
   });
 
@@ -89,7 +89,7 @@
     const cats = $('#home-categories');
     if (cats) {
       cats.innerHTML = Catalog.categories().map((c) => `
-        <a class="cat-tile" href="productos.html?categoria=${encodeURIComponent(c.id)}">
+        <a class="cat-tile" href="/productos?categoria=${encodeURIComponent(c.id)}">
           <svg class="ico ico-lg" aria-hidden="true"><use href="#i-${esc(c.icon)}"/></svg>
           <span>${esc(c.name)}</span>
         </a>`).join('');
@@ -103,7 +103,7 @@
     const brandsList = Catalog.brands();
     if (brandsBox && brandsList.length) {
       const tile = (b) => `
-        <a class="brand-tile" href="productos.html?marca=${encodeURIComponent(b.id)}" aria-label="Ver productos ${esc(b.name)}">
+        <a class="brand-tile" href="/productos?marca=${encodeURIComponent(b.id)}" aria-label="Ver productos ${esc(b.name)}">
           ${b.logo ? `<img src="${esc(b.logo)}" alt="${esc(b.name)}" loading="lazy">` : `<span class="brand-tile-name">${esc(b.name)}</span>`}
         </a>`;
       /* Con marcas de más de un rubro, se muestran agrupadas (Detailing, Lubricantes, Filtros) */
@@ -250,14 +250,14 @@
   }
 
   /* ==========================================================
-     FICHA DE PRODUCTO (producto.html?id=...)
+     FICHA DE PRODUCTO (/producto?id=...)
      ========================================================== */
   function initProduct() {
     const root = $('#product-root');
     const p = Catalog.get(new URLSearchParams(location.search).get('id') || '');
     if (!p) {
       document.title = 'Producto no encontrado | BLACK Río Cuarto';
-      root.innerHTML = `<div class="empty empty-lg"><h1>Producto no encontrado</h1><p>Puede que ya no esté a la venta o que el link haya cambiado.</p><a class="btn btn-red btn-lg" href="productos.html">Ver productos</a></div>`;
+      root.innerHTML = `<div class="empty empty-lg"><h1>Producto no encontrado</h1><p>Puede que ya no esté a la venta o que el link haya cambiado.</p><a class="btn btn-red btn-lg" href="/productos">Ver productos</a></div>`;
       return;
     }
     const s = stockInfo(p);
@@ -276,8 +276,8 @@
 
     root.innerHTML = `
       <nav class="crumbs" aria-label="Ruta">
-        <a href="productos.html">Productos</a>
-        ${catName ? `<span aria-hidden="true">›</span><a href="productos.html?categoria=${encodeURIComponent(p.category)}">${esc(catName)}</a>` : ''}
+        <a href="/productos">Productos</a>
+        ${catName ? `<span aria-hidden="true">›</span><a href="/productos?categoria=${encodeURIComponent(p.category)}">${esc(catName)}</a>` : ''}
       </nav>
       <article class="pd${avail ? '' : ' is-out'}">
         <div class="pd-gallery">
@@ -286,7 +286,7 @@
             : `<div class="p-media pd-media">${mediaHTML(p)}</div>`}
         </div>
         <div class="pd-info">
-          ${brand ? `<a class="pd-brand" href="productos.html?marca=${encodeURIComponent(p.brand)}">${brandLogo ? `<img class="p-brand-logo" src="${esc(brandLogo)}" alt="" width="40" height="28">` : ''}<span>${esc(brand)}</span></a>` : ''}
+          ${brand ? `<a class="pd-brand" href="/productos?marca=${encodeURIComponent(p.brand)}">${brandLogo ? `<img class="p-brand-logo" src="${esc(brandLogo)}" alt="" width="40" height="28">` : ''}<span>${esc(brand)}</span></a>` : ''}
           <h1 class="pd-name">${esc(p.name)}</h1>
           <p class="pd-price">${fmt(p.price)}</p>
           <p class="stock stock-${s.cls}">${s.text}</p>
@@ -326,7 +326,7 @@
       </article>
       ${related.length ? `
       <section class="pd-related" aria-labelledby="pd-rel-t">
-        <div class="section-head"><h2 id="pd-rel-t">También te puede interesar</h2>${catName ? `<a class="text-link" href="productos.html?categoria=${encodeURIComponent(p.category)}">Ver ${esc(catName)}<svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>` : ''}</div>
+        <div class="section-head"><h2 id="pd-rel-t">También te puede interesar</h2>${catName ? `<a class="text-link" href="/productos?categoria=${encodeURIComponent(p.category)}">Ver ${esc(catName)}<svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></a>` : ''}</div>
         <div class="product-grid">${related.map(productCard).join('')}</div>
       </section>` : ''}`;
 
@@ -352,12 +352,12 @@
     if (addBtn) {
       addBtn.addEventListener('click', () => {
         const r = addQty();
-        if (r.ok) B.toast(r.added === 1 ? `${p.name} agregado al carrito.` : `Agregaste ${r.added} unidades de ${p.name}.`, { href: 'carrito.html', label: 'Ver carrito' });
+        if (r.ok) B.toast(r.added === 1 ? `${p.name} agregado al carrito.` : `Agregaste ${r.added} unidades de ${p.name}.`, { href: '/carrito', label: 'Ver carrito' });
         else B.toast(r.reason === 'max' ? 'Ya tenés en el carrito todo el stock disponible.' : 'Este producto está sin stock.');
       });
       $('#pd-buy-now').addEventListener('click', () => {
         const r = addQty();
-        if (r.ok || r.reason === 'max') location.href = 'carrito.html';
+        if (r.ok || r.reason === 'max') location.href = '/carrito';
         else B.toast('Este producto está sin stock.');
       });
     }
@@ -407,7 +407,7 @@
 
       if (!lines.length) {
         bar.hidden = true;
-        root.innerHTML = `${noteHTML}<div class="empty empty-lg"><svg class="ico ico-xl" aria-hidden="true"><use href="#i-cart"/></svg><h2>Tu carrito está vacío</h2><p>Sumá productos del catálogo y armá tu pedido.</p><a class="btn btn-red btn-lg" href="productos.html">Ver productos</a></div>`;
+        root.innerHTML = `${noteHTML}<div class="empty empty-lg"><svg class="ico ico-xl" aria-hidden="true"><use href="#i-cart"/></svg><h2>Tu carrito está vacío</h2><p>Sumá productos del catálogo y armá tu pedido.</p><a class="btn btn-red btn-lg" href="/productos">Ver productos</a></div>`;
         return;
       }
       const total = Cart.total();
@@ -447,13 +447,13 @@
             <div class="total"><dt>TOTAL</dt><dd>${fmt(total)}</dd></div>
           </dl>
           <p class="fine">Si elegís envío a domicilio, el costo se coordina con el personal.</p>
-          <a class="btn btn-red btn-lg btn-block summary-cta" href="checkout.html">Continuar con el pedido</a>
-          <a class="btn btn-line btn-block" href="productos.html">Seguir comprando</a>
+          <a class="btn btn-red btn-lg btn-block summary-cta" href="/checkout">Continuar con el pedido</a>
+          <a class="btn btn-line btn-block" href="/productos">Seguir comprando</a>
         </aside>
       </div>`;
 
       bar.hidden = false;
-      bar.innerHTML = `<div><span class="bar-label">Total</span><strong>${fmt(total)}</strong></div><a class="btn btn-red btn-lg" href="checkout.html">Continuar con el pedido</a>`;
+      bar.innerHTML = `<div><span class="bar-label">Total</span><strong>${fmt(total)}</strong></div><a class="btn btn-red btn-lg" href="/checkout">Continuar con el pedido</a>`;
 
       if (focusAfter) {
         const el = root.querySelector(`[data-qty="${focusAfter.id}"][data-act="${focusAfter.act}"]:not([disabled])`) || root.querySelector(`[data-qty="${focusAfter.id}"]:not([disabled])`);
@@ -591,7 +591,7 @@
       /* El stock pudo cambiar mientras el cliente completaba sus datos */
       const changes = Cart.reconcile();
       if (changes.length) {
-        if (!Cart.lines().length) { location.href = 'carrito.html'; return; }
+        if (!Cart.lines().length) { location.href = '/carrito'; return; }
         renderSummary(changes);
         formError.textContent = 'Algunos productos cambiaron de stock. Revisá tu pedido y confirmalo de nuevo.';
         return;
@@ -614,9 +614,9 @@
       try {
         const pay = await Payments.begin(order);
         if (pay.redirected) return;
-        location.href = 'pedido.html';
+        location.href = '/pedido';
       } catch (err) {
-        location.href = 'pedido.html?pago=error';
+        location.href = '/pedido?pago=error';
       }
     });
   }
@@ -628,7 +628,7 @@
     const root = $('#order-root');
     const order = Orders.last();
     if (!order) {
-      root.innerHTML = `<div class="empty empty-lg"><h2>No hay ningún pedido reciente</h2><p>Cuando confirmes un pedido, lo vas a ver acá.</p><a class="btn btn-red btn-lg" href="productos.html">Ver productos</a></div>`;
+      root.innerHTML = `<div class="empty empty-lg"><h2>No hay ningún pedido reciente</h2><p>Cuando confirmes un pedido, lo vas a ver acá.</p><a class="btn btn-red btn-lg" href="/productos">Ver productos</a></div>`;
       return;
     }
     const waHref = waLink(Orders.whatsappText(order));
@@ -652,7 +652,7 @@
         <section class="card" aria-labelledby="t-order">
           <h2 id="t-order">Tu pedido</h2>
           <ul class="order-lines">
-            ${order.items.map((i) => `<li><span class="ol-name">${esc(i.name)}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(Number(i.subtotal))}</span></li>`).join('')}
+            ${order.items.map((i) => `<li><span class="ol-name">${esc(i.name)}${i.brand ? ` <small class="ol-brand">${esc(i.brand)}</small>` : ''}</span><span class="ol-qty">× ${i.quantity}</span><span class="ol-price">${fmt(Number(i.subtotal))}</span></li>`).join('')}
           </ul>
           <p class="order-total"><span>Total</span><strong>${fmt(Number(order.total))}</strong></p>
           ${envio ? '<p class="fine">El costo del envío se suma después, por WhatsApp.</p>' : ''}
@@ -668,7 +668,7 @@
           </dl>
         </section>
       </div>
-      <div class="actions-row"><a class="btn btn-line btn-lg" href="productos.html">Seguir viendo productos</a></div>`;
+      <div class="actions-row"><a class="btn btn-line btn-lg" href="/productos">Seguir viendo productos</a></div>`;
     const h = $('#done-title');
     if (h) h.focus({ preventScroll: true });
   }
@@ -694,7 +694,37 @@
   }
 
   /* ---------- Arranque ---------- */
+  /* Aviso cuando no se pudo leer el catálogo (base pausada o sin conexión) */
+  function catalogErrorHTML() {
+    return `<div class="empty empty-lg catalog-error" role="alert">
+      <h2>No pudimos cargar los productos</h2>
+      <p>Puede ser un problema momentáneo. Probá recargar en unos minutos o consultanos por WhatsApp.</p>
+      <div class="actions-row" style="justify-content:center">
+        <button type="button" class="btn btn-red" data-reload>Recargar</button>
+        <a class="btn btn-wa" href="${waLink('Hola BLACK, quiero hacer una consulta.')}" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Consultar por WhatsApp</a>
+      </div>
+    </div>`;
+  }
+  function showCatalogError() {
+    const hide = (sel) => { const el = $(sel); if (el) el.hidden = true; };
+    if (page === 'home') {
+      const cats = $('#home-categories'); if (cats) cats.closest('section').hidden = true;
+      const feat = $('#home-featured'); if (feat) { feat.innerHTML = catalogErrorHTML(); const link = feat.closest('section').querySelector('.section-head .text-link'); if (link) link.hidden = true; }
+    } else if (page === 'productos') {
+      ['#catalog-search-form', '#category-chips', '#catalog-count', '.page-head-row .btn-share'].forEach(hide);
+      $('#catalog-grid').innerHTML = catalogErrorHTML();
+    } else if (page === 'carrito') {
+      hide('#sticky-bar');
+      $('#cart-root').innerHTML = catalogErrorHTML();
+    } else if (page === 'checkout') {
+      hide('#checkout-wrap'); hide('#sticky-bar');
+      const box = $('#checkout-empty'); box.hidden = false; box.outerHTML = catalogErrorHTML();
+    }
+  }
+  document.addEventListener('click', (e) => { if (e.target.closest('[data-reload]')) location.reload(); });
+
   Catalog.load().then(() => {
+    if (Catalog.failed && ['home', 'productos', 'carrito', 'checkout'].includes(page)) { showCatalogError(); return; }
     if (page === 'home') initHome();
     else if (page === 'productos') initCatalog();
     else if (page === 'producto') initProduct();

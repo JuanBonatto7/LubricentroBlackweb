@@ -44,7 +44,8 @@
       <div class="container adm-header-inner">
         <strong class="adm-title">BLACK · Administración</strong>
         <nav class="adm-actions" aria-label="Acciones">
-          <a class="btn btn-line" href="index.html" target="_blank" rel="noopener">Ver tienda</a>
+          <a class="btn btn-line" href="/" target="_blank" rel="noopener">Ver tienda</a>
+          <button class="btn btn-line" type="button" id="change-pass">Contraseña</button>
           <button class="btn btn-line" type="button" id="logout">Salir</button>
         </nav>
       </div>
@@ -73,6 +74,8 @@
 
       <section id="panel-pedidos" role="tabpanel" aria-labelledby="tab-pedidos" hidden>
         <div class="adm-toolbar">
+          <label class="sr-only" for="order-search">Buscar pedido</label>
+          <div class="search"><input id="order-search" type="search" placeholder="Buscar por número (BK-000001), nombre o teléfono" autocomplete="off"></div>
           <label class="sr-only" for="order-filter">Filtrar por estado</label>
           <select class="select" id="order-filter"></select>
         </div>
@@ -172,6 +175,28 @@
       </div>
     </form>
   </dialog>
+  <!-- Cambiar contraseña -->
+  <dialog class="adm-dialog adm-dialog-sm" id="pass-dialog" aria-labelledby="pass-title">
+    <form id="pass-form" novalidate>
+      <h2 id="pass-title">Cambiar contraseña</h2>
+      <div class="field">
+        <label for="np1">Contraseña nueva</label>
+        <input id="np1" type="password" autocomplete="new-password" minlength="10" required aria-describedby="np-help">
+        <p class="fine" id="np-help">Mínimo 10 caracteres. Tip: tres palabras y un número, por ejemplo "Mate-Ruta-Sol-27".</p>
+      </div>
+      <div class="field">
+        <label for="np2">Repetila</label>
+        <input id="np2" type="password" autocomplete="new-password" required>
+      </div>
+      <p class="form-error" id="pass-error" role="alert"></p>
+      <p class="share-msg" id="pass-ok" role="status"></p>
+      <div class="adm-dialog-actions">
+        <button class="btn btn-line" type="button" id="pass-cancel">Cerrar</button>
+        <button class="btn btn-red" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- Formulario de categoría / marca -->
   <dialog class="adm-dialog adm-dialog-sm" id="mini-dialog" aria-labelledby="mini-title">
     <form id="mini-form" novalidate>

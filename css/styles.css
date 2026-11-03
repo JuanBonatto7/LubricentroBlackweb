@@ -227,6 +227,7 @@ h2 { margin-bottom: 14px; font-size: clamp(1.7rem, 4.5vw, 2.4rem); font-weight: 
 .order-lines { margin: 0 0 8px; padding: 0; list-style: none; }
 .order-lines li { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .95rem; }
 .ol-qty { color: var(--muted); }
+.ol-brand { display: block; color: var(--muted); font-size: .8rem; font-weight: 600; }
 .ol-price { min-width: 78px; font-weight: 700; text-align: right; }
 .order-total { display: flex; align-items: baseline; justify-content: space-between; margin: 10px 0 0; }
 .order-total span { font: 800 1.3rem var(--head); text-transform: uppercase; }
@@ -371,7 +372,9 @@ body.has-bar .toast { bottom: 96px; }
 .hero-sub { max-width: 520px; color: #fff; font-size: clamp(1.45rem, 5.2vw, 2.3rem); line-height: 1.02; }
 .hero-sub::before { content: ""; display: block; width: 64px; height: 5px; margin: 10px 0 12px; background: var(--red); }
 .hero-logo-wrap { position: relative; display: grid; order: -1; place-items: center; }
-.hero-logo { width: 132px; height: 132px; border-radius: 50%; background: #fff; object-fit: contain; box-shadow: 0 0 0 5px var(--red), 0 18px 40px rgba(0,0,0,.6); }
+.hero-logo { display: grid; width: 132px; height: 132px; place-items: center; overflow: hidden; border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px var(--red), 0 18px 40px rgba(0,0,0,.6); }
+
+.hero-logo-img { display: block; width: 80%; height: 80%; object-fit: contain; }
 
 /* Encabezado oscuro de Lubricentro (mismo estilo que el inicio) */
 .page-head-dark { position: relative; overflow: hidden; border-bottom: 0; background: var(--black); color: #fff; }
@@ -421,6 +424,17 @@ body.has-bar .toast { bottom: 96px; }
 .wa-next { margin: 10px 0 0; text-align: center; }
 .choices-pay { grid-template-columns: 1fr; }
 @media (min-width: 600px) { .wa-step .btn { width: auto; } .choices-pay { grid-template-columns: 1fr 1fr; } }
+
+/* Categorías en celular: ícono arriba y nombre abajo, sin cortar palabras */
+@media (max-width: 599px) {
+  .cat-tile { flex-direction: column; justify-content: center; gap: 6px; padding: 12px 6px; text-align: center; font-size: .95rem; }
+  .cat-tile span { overflow-wrap: normal; hyphens: manual; }
+  .adm-header-inner { flex-wrap: wrap; gap: 8px; padding: 10px 0; }
+  .adm-title { font-size: 1.15rem; }
+  .adm-actions { width: 100%; }
+  .adm-actions .btn { flex: 1; min-height: 40px; padding: 0 8px; font-size: .85rem; }
+}
+.btn-wa .ico, .empty-lg .btn-wa .ico { color: inherit; }
 
 /* Compartir catálogo */
 .page-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }

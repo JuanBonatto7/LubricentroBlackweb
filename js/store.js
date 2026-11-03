@@ -84,7 +84,7 @@
      Celular: abre el menú de compartir del teléfono. Si no existe, copia el link.
      Devuelve 'shared', 'cancelled', 'copied' o 'manual'. */
   async function shareCatalog() {
-    const url = new URL('productos.html', location.href).href;
+    const url = new URL('/productos', location.href).href;
     const title = `Catálogo de ${cfg.business.name}`;
     const text = `Mirá los productos de ${cfg.business.name}:`;
     if (navigator.share) {
@@ -101,10 +101,12 @@
       if (SB_ON) {
         try {
           const sb = await getSB();
-          const [c, p] = await Promise.all([
+          /* Si la base no contesta en 15 s (por ejemplo, proyecto pausado), se muestra el aviso */
+          const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
+          const [c, p] = await Promise.race([Promise.all([
             sb.from('categories').select('*').order('sort_order'),
             sb.from('products').select('*').eq('active', true).order('created_at', { ascending: false }).order('name'),
-          ]);
+          ]), timeout]);
           if (c.error || p.error) throw (c.error || p.error);
           window.BLACK_CATEGORIES = c.data.map((x) => ({ id: x.id, name: x.name, icon: x.icon }));
           window.BLACK_PRODUCTS = p.data.map(rowToProduct);
@@ -112,7 +114,13 @@
           const b = await sb.from('brands').select('*').order('name');
           window.BLACK_BRANDS = b.error ? [] : b.data.map((x) => ({ id: x.id, name: x.name, logo: x.logo_url || '', group: x.rubro || '' }));
         } catch (e) {
-          console.warn('No se pudo leer el catálogo de Supabase; se usa el catálogo local.', e);
+          /* Nunca se muestran los productos de ejemplo de products-data.js en lugar de los reales:
+             se vacía el catálogo y cada página muestra un aviso (ver script.js) */
+          console.warn('No se pudo leer el catálogo de Supabase.', e);
+          window.BLACK_CATEGORIES = [];
+          window.BLACK_PRODUCTS = [];
+          window.BLACK_BRANDS = [];
+          this.failed = true;
         }
         return;
       }
@@ -193,6 +201,7 @@
     remove(id) { this._write(this._read().filter((i) => i.id !== id)); },
     clear() { this._write([]); },
     reconcile() {
+      if (Catalog.failed) return [];   // sin catálogo no se toca el carrito
       const notes = [];
       const out = [];
       this._read().forEach((i) => {
@@ -258,6 +267,13 @@
         });
         storage.set(KEYS.orders, storage.get(KEYS.orders, []).concat(order));
       }
+      /* Se guarda la marca de cada producto para mostrarla en la confirmación y en WhatsApp */
+      if (Array.isArray(order.items)) {
+        order.items = order.items.map((i) => {
+          const p = Catalog.get(i.productId);
+          return Object.assign({}, i, { brand: i.brand || (p ? Catalog.brandName(p.brand) : '') });
+        });
+      }
       storage.set(KEYS.last, order);
       Cart.clear();
       return order;
@@ -270,7 +286,7 @@
       L.push(`Hola ${cfg.business.shortName || cfg.business.name}! Quiero confirmar este pedido:`);
       L.push('');
       L.push(`*Pedido ${o.number}*`);
-      (o.items || []).forEach((i) => L.push(`- ${i.quantity} x ${i.name}: ${fmt(Number(i.subtotal))}`));
+      (o.items || []).forEach((i) => L.push(`- ${i.quantity} x ${i.name}${i.brand ? ` (${i.brand})` : ''}: ${fmt(Number(i.subtotal))}`));
       const envio = o.delivery && o.delivery.method === 'envio';
       L.push(`*Total: ${fmt(Number(o.total))}*${envio ? ' + envío (a coordinar)' : ''}`);
       L.push('');

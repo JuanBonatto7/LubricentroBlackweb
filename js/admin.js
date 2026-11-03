@@ -22,7 +22,7 @@
   const catName = (id) => (categories.find((c) => c.id === id) || {}).name || '—';
   const brandName = (id) => (brands.find((b) => b.id === id) || {}).name || '';
   const groupName = (id) => (B.cfg.brandGroups.find((g) => g.id === id) || {}).name || 'Sin rubro';
-  const ICONS = [['spark', 'Brillo'], ['car', 'Auto'], ['seat', 'Asiento'], ['shield', 'Protección'], ['bag', 'Bolsa'], ['drop', 'Gota'], ['filter', 'Filtro'], ['wrench', 'Llave'], ['bubbles', 'Espuma'], ['spray', 'Rociador'], ['cloth', 'Paño'], ['bottle', 'Botella'], ['dots', 'Otros']];
+  const ICONS = [['spark', 'Brillo'], ['car', 'Auto'], ['seat', 'Asiento'], ['shield', 'Protección'], ['bag', 'Bolsa'], ['drop', 'Gota'], ['filter', 'Filtro'], ['wrench', 'Llave'], ['bubbles', 'Espuma'], ['spray', 'Rociador'], ['cloth', 'Paño'], ['bottle', 'Botella'], ['battery', 'Batería'], ['oilcan', 'Aceitera'], ['additive', 'Aditivo'], ['oilfilter', 'Filtro de aceite'], ['tree', 'Aromatizante'], ['dots', 'Otros']];
 
   /* ---------- Mapeos base de datos ⇄ pantalla ---------- */
   const mapOrder = (r) => ({
@@ -129,6 +129,41 @@
     } finally {
       btn.disabled = false;
     }
+  });
+
+  /* ---------- Cambiar contraseña ---------- */
+  const passDlg = $('#pass-dialog');
+  const passForm = $('#pass-form');
+  const closePass = () => { if (passDlg.close) passDlg.close(); else passDlg.removeAttribute('open'); };
+  $('#change-pass').addEventListener('click', () => {
+    passForm.reset(); $('#pass-error').textContent = ''; $('#pass-ok').textContent = '';
+    if (passDlg.showModal) passDlg.showModal(); else passDlg.setAttribute('open', '');
+    $('#np1').focus();
+  });
+  $('#pass-cancel').addEventListener('click', closePass);
+  passForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const p1 = $('#np1').value; const p2 = $('#np2').value;
+    $('#pass-error').textContent = ''; $('#pass-ok').textContent = '';
+    if (p1.length < 10) { $('#pass-error').textContent = 'La contraseña tiene que tener al menos 10 caracteres.'; $('#np1').focus(); return; }
+    if (p1 !== p2) { $('#pass-error').textContent = 'Las dos contraseñas no coinciden.'; $('#np2').focus(); return; }
+    const btn = passForm.querySelector('button[type="submit"]'); btn.disabled = true;
+    try {
+      const { error } = await sb.auth.updateUser({ password: p1 });
+      if (error) {
+        const m = (error.message || '').toLowerCase();
+        $('#pass-error').textContent = m.includes('different') || m.includes('same')
+          ? 'La contraseña nueva tiene que ser distinta de la actual.'
+          : m.includes('weak') || m.includes('pwned') || m.includes('leaked')
+            ? 'Esa contraseña es muy débil o apareció en filtraciones. Elegí otra.'
+            : 'No se pudo cambiar. Si pasó mucho tiempo desde que entraste, salí, volvé a entrar e intentá de nuevo.';
+        return;
+      }
+      passForm.reset();
+      $('#pass-ok').textContent = 'Listo, la contraseña se cambió. Usala la próxima vez que entres.';
+    } catch (err) {
+      $('#pass-error').textContent = 'No se pudo conectar. Intentá de nuevo.';
+    } finally { btn.disabled = false; }
   });
 
   $('#logout').addEventListener('click', async () => {
@@ -576,6 +611,8 @@
   const filter = $('#order-filter');
   filter.innerHTML = '<option value="all">Todos los estados</option>' + Object.entries(ORDER_STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
   filter.addEventListener('change', renderOrders);
+  const orderSearch = $('#order-search');
+  orderSearch.addEventListener('input', renderOrders);
 
   const statusClass = (s) => ({ pendiente_pago: 'b-amber', pago_rechazado: 'b-red', cancelado: 'b-red', entregado: 'b-green', pago_aprobado: 'b-green' }[s] || 'b-dark');
   const opts = (map, current) => Object.entries(map).map(([k, v]) => `<option value="${k}"${k === current ? ' selected' : ''}>${v}</option>`).join('');
@@ -590,7 +627,9 @@
     const all = orders;
     updateBadge();
 
-    const rows = filter.value === 'all' ? all : all.filter((o) => o.status === filter.value);
+    const q = orderSearch.value.trim().toLowerCase().replace(/\s+/g, '');
+    const byStatus = filter.value === 'all' ? all : all.filter((o) => o.status === filter.value);
+    const rows = q ? byStatus.filter((o) => [o.number, o.customer.name, o.customer.phone].some((v) => String(v || '').toLowerCase().replace(/\s+/g, '').includes(q))) : byStatus;
     $('#order-count').textContent = rows.length === 1 ? '1 pedido' : `${rows.length} pedidos`;
 
     if (!all.length) {
