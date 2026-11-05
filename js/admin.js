@@ -6,7 +6,14 @@
 (function () {
   'use strict';
   const B = window.BLACK;
-  const { fmt, esc, norm, ORDER_STATUS, PAYMENT_STATUS } = B;
+  const { fmt, esc, norm, ORDER_STATUS } = B;
+  /* Estados que el admin puede elegir: un solo recorrido para el pedido */
+  const ADMIN_ORDER_STATUS = {
+    pendiente_pago: ORDER_STATUS.pendiente_pago,
+    en_preparacion: ORDER_STATUS.en_preparacion,
+    entregado: ORDER_STATUS.entregado,
+    cancelado: ORDER_STATUS.cancelado,
+  };
   const $ = (s, r = document) => r.querySelector(s);
   const BUCKET = 'product-images';
 
@@ -611,13 +618,17 @@
      ========================================================== */
   const orderList = $('#order-list');
   const filter = $('#order-filter');
-  filter.innerHTML = '<option value="all">Todos los estados</option>' + Object.entries(ORDER_STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  filter.innerHTML = '<option value="all">Todos los estados</option>' + Object.entries(ADMIN_ORDER_STATUS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
   filter.addEventListener('change', renderOrders);
   const orderSearch = $('#order-search');
   orderSearch.addEventListener('input', renderOrders);
 
   const statusClass = (s) => ({ pendiente_pago: 'b-amber', pago_rechazado: 'b-red', cancelado: 'b-red', entregado: 'b-green', pago_aprobado: 'b-green' }[s] || 'b-dark');
-  const opts = (map, current) => Object.entries(map).map(([k, v]) => `<option value="${k}"${k === current ? ' selected' : ''}>${v}</option>`).join('');
+  /* Un pedido viejo con un estado que ya no se elige (ej. "Pago aprobado") lo muestra igual, para no cambiarlo sin querer */
+  const opts = (map, current) => {
+    const all = current && !map[current] ? Object.assign({}, map, { [current]: ORDER_STATUS[current] || current }) : map;
+    return Object.entries(all).map(([k, v]) => `<option value="${k}"${k === current ? ' selected' : ''}>${v}</option>`).join('');
+  };
 
   /* Cuánto le queda a la reserva de un pedido sin confirmar (se cancela sola a las 24 horas) */
   function reserveLeft(o) {
@@ -671,8 +682,7 @@
               ${o.delivery.notes ? `<div><dt>Observaciones</dt><dd>${esc(o.delivery.notes)}</dd></div>` : ''}
             </dl>
             <div class="field-row">
-              <div class="field"><label for="st-${esc(o.number)}">Estado del pedido</label><select class="select" id="st-${esc(o.number)}" data-set="status">${opts(ORDER_STATUS, o.status)}</select></div>
-              <div class="field"><label for="pay-${esc(o.number)}">Estado del pago</label><select class="select" id="pay-${esc(o.number)}" data-set="payment">${opts(PAYMENT_STATUS, o.payment && o.payment.status)}</select></div>
+              <div class="field"><label for="st-${esc(o.number)}">Estado del pedido</label><select class="select" id="st-${esc(o.number)}" data-set="status">${opts(ADMIN_ORDER_STATUS, o.status)}</select></div>
             </div>
           </div>
         </details>
@@ -699,10 +709,6 @@
         card.querySelectorAll('[data-reserve]').forEach((el) => { el.hidden = o.status !== 'pendiente_pago'; });
         // Cancelar devuelve el stock: refrescamos la lista de productos en segundo plano
         if (o.status === 'cancelado') loadProducts().then(renderProducts).catch(() => {});
-      } else {
-        const { error } = await sb.from('orders').update({ payment_status: sel.value }).eq('number', o.number);
-        if (error) throw error;
-        o.payment = { status: sel.value };
       }
       updateBadge();
     } catch (err) {
