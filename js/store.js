@@ -48,7 +48,7 @@
     active: r.active !== false,
     image: r.image_url || '',
     brand: r.brand_id || '',
-    specs: Array.isArray(r.specs) ? r.specs.filter((s) => s && s.value) : [],
+    specs: Array.isArray(r.specs) ? r.specs.filter((s) => s && s.label && s.value) : [],
     art:r.art && r.art.shape ? r.art : { shape: 'bottle', color: '#e11d2e' },
   });
 
