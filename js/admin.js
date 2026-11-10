@@ -382,6 +382,17 @@
     });
     if (first) { first.focus(); return; }
 
+    /* Cada línea de "Datos del producto" necesita el formato "Dato: valor"; si no, se descartaría sin avisar */
+    if (specsReady) {
+      const badLine = form.elements.specs.value.split('\n').map((l) => l.trim()).filter(Boolean)
+        .find((l) => { const i = l.indexOf(':'); return i <= 0 || !l.slice(i + 1).trim(); });
+      if (badLine) {
+        $('#p-form-error').textContent = `En "Datos del producto" escribí cada línea con dos puntos, por ejemplo "Contenido: 4 litros". Revisá esta línea: "${badLine}"`;
+        form.elements.specs.focus();
+        return;
+      }
+    }
+
     const submitBtn = form.querySelector('button[type="submit"]');
     saving = true; submitBtn.disabled = true;
     $('#p-form-error').textContent = '';
