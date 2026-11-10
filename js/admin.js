@@ -75,11 +75,18 @@
     products = data.map(B.rowToProduct);
   }
 
-  /* Datos del producto: en el formulario es texto ("Dato: valor" por línea), en la base una lista */
-  const specsToText = (specs) => (specs || []).map((s) => `${s.label}: ${s.value}`).join('\n');
+  /* Datos del producto: en el formulario es texto libre (una línea por dato), en la base una lista.
+     Si la línea tiene "Dato: valor" se muestra como tabla; si no, se guarda tal cual, sin título. */
+  const specsToText = (specs) => (specs || []).map((s) => (s.label ? `${s.label}: ${s.value}` : s.value)).join('\n');
   const textToSpecs = (text) => text.split('\n')
-    .map((line) => { const i = line.indexOf(':'); return i > 0 ? { label: line.slice(0, i).trim().slice(0, 60), value: line.slice(i + 1).trim().slice(0, 200) } : null; })
-    .filter((s) => s && s.label && s.value)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const i = line.indexOf(':');
+      const label = i > 0 ? line.slice(0, i).trim() : '';
+      const value = i > 0 ? line.slice(i + 1).trim() : '';
+      return label && value ? { label: label.slice(0, 60), value: value.slice(0, 200) } : { label: '', value: line.slice(0, 260) };
+    })
     .slice(0, 30);
   async function loadOrders() {
     const { data, error } = await sb.from('orders').select('*, order_items(*)').order('created_at', { ascending: false });
@@ -381,17 +388,6 @@
       if (errs[k]) { form.elements[k].setAttribute('aria-invalid', 'true'); first = first || form.elements[k]; } else form.elements[k].removeAttribute('aria-invalid');
     });
     if (first) { first.focus(); return; }
-
-    /* Cada línea de "Datos del producto" necesita el formato "Dato: valor"; si no, se descartaría sin avisar */
-    if (specsReady) {
-      const badLine = form.elements.specs.value.split('\n').map((l) => l.trim()).filter(Boolean)
-        .find((l) => { const i = l.indexOf(':'); return i <= 0 || !l.slice(i + 1).trim(); });
-      if (badLine) {
-        $('#p-form-error').textContent = `En "Datos del producto" escribí cada línea con dos puntos, por ejemplo "Contenido: 4 litros". Revisá esta línea: "${badLine}"`;
-        form.elements.specs.focus();
-        return;
-      }
-    }
 
     const submitBtn = form.querySelector('button[type="submit"]');
     saving = true; submitBtn.disabled = true;
