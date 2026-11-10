@@ -319,7 +319,7 @@
           <section class="card" aria-labelledby="pd-facts-t">
             <h2 id="pd-facts-t">Datos del producto</h2>
             <table class="pd-specs">
-              <tbody>${facts.map(([k, v]) => (k ? `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>` : `<tr><td colspan="2">${esc(v)}</td></tr>`)).join('')}</tbody>
+              <tbody>${facts.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody>
             </table>
           </section>` : ''}
         </div>
